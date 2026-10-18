@@ -207,7 +207,7 @@ function goHit(d){const bar=document.getElementById("find"),n=FIND.hits.length;
  h.scrollIntoView({behavior:STILL?"auto":"smooth",block:"center"})}
 function closeFind(){clearHits();document.getElementById("find").classList.remove("on");document.querySelectorAll(".card.full").forEach(c=>c.classList.remove("full"))}
 function drawMap(){
- const cx=720,cy=300,svg=document.getElementById("map");let s="<g id='blobs'></g>";
+ const cx=720,cy=300,svg=document.getElementById("map");let s="";
  const R=m=>m.plan?26:24+Math.sqrt(C.worlds(C.test(m.l)).length)*7;
  const at=l=>MAP.find(m=>m.l===l);
  const curve=(x1,y1,x2,y2)=>`M${x1},${y1} Q${(x1+x2)/2},${y2} ${x2},${y2}`;
@@ -215,10 +215,11 @@ function drawMap(){
  MAP.filter(m=>!m.plan&&m.side).forEach((m,i)=>{const t=C.test(m.l),kw=((C.info(t).kw||{}).patterns||[]).slice(0,3),r=R(m),right=m.side==="right";
   kw.forEach((k,j)=>{const w=k.length*6.6+22,ky=m.y+(j-(kw.length-1)/2)*30,kx0=right?m.x+r+34:m.x-r-34-w,ax=right?kx0:kx0+w;
   s+=`<path class="edge k" d="M${m.x+(right?r:-r)},${m.y} L${ax},${ky}"/><g class="pill float" data-k="${esc(k)}" data-t="${t.label}" tabindex="0" role="button" aria-label="Find ${esc(k)}" style="animation-delay:${-(i*3+j)*.7}s"><rect x="${kx0}" y="${ky-11}" width="${w}" height="22" rx="11"/><text x="${kx0+w/2}" y="${ky}">${esc(k)}</text></g>`})});
-  MAP.forEach(m=>{const r=R(m);
+  s+="<g id='blobs'></g>";
+ MAP.forEach(m=>{const r=R(m);
   if(m.plan){s+=`<g class="plan"><circle cx="${m.x}" cy="${m.y}" r="${r}" fill="#fff" stroke="var(--green)" stroke-dasharray="3 3"/><text x="${m.x}" y="${m.y+4}" text-anchor="middle" style="font-size:12px;fill:var(--green)">Test ${m.l}</text><text x="${m.x}" y="${m.y+r+18}" text-anchor="middle" style="font-size:12px">${esc(m.name)}</text><text x="${m.x}" y="${m.y+r+33}" text-anchor="middle" style="font-size:11px;fill:var(--soft)">${esc(m.sub)}</text></g>`;return}
   const t=C.test(m.l),n=C.worlds(t).length;
-  s+=`<g class="node${t===T?" on":""}" data-t="${t.label}" tabindex="0" role="button" aria-label="Test ${t.label}"><circle cx="${m.x}" cy="${m.y}" r="${r}"/><text class="lab" x="${m.x}" y="${m.y-2}">Test ${t.label}</text><text class="mono" x="${m.x}" y="${m.y+14}" style="font-size:10.5px">${n}/${t.runs}</text><text x="${m.x}" y="${m.y+r+18}" style="font-size:12px">${esc(m.sub||t.name)}</text></g>`});
+  s+=`<g class="node${t===T?" on":""}" data-t="${t.label}" tabindex="0" role="button" aria-label="Test ${t.label}"><circle cx="${m.x}" cy="${m.y}" r="${r}"/><text class="lab" x="${m.x}" y="${m.y-2}">Test ${t.label}</text><text class="mono" x="${m.x}" y="${m.y+14}" style="font-size:10.5px">${n}/10</text><text x="${m.x}" y="${m.y+r+18}" style="font-size:12px">${esc(m.sub||t.name)}</text></g>`});
  svg.innerHTML=s;if(STILL)blobFrame(0);else if(!window._blob){window._blob=1;requestAnimationFrame(blobFrame)}
  svg.querySelectorAll(".node").forEach(g=>{const go=()=>{T=C.test(g.dataset.t);history.replaceState(0,"","?t="+T.label);render();drift(document.querySelector("main"))};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
  svg.querySelectorAll(".pill").forEach(g=>{const go=()=>{const t=C.test(g.dataset.t);if(t!==T){T=t;history.replaceState(0,"","?t="+T.label);render()}findKw(g.dataset.k)};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
