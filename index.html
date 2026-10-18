@@ -54,6 +54,11 @@ tr.row:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
 .pill{display:inline-block;font:600 11px var(--mono);padding:2px 7px;border-radius:999px;background:var(--chip);color:var(--ink)}
 .pill.text{color:var(--accent)} .pill.physics{color:var(--bad)} .pill.permanence{color:var(--warn)} .pill.other{color:var(--muted)}
 .empty{padding:40px 20px;color:var(--muted);text-align:center}
+table:not(.showmore) .x{display:none}
+th.more,td.more{width:1%;padding-inline:6px;border-left:1px solid var(--line)}
+.morebtn{display:flex;align-items:center;gap:8px;font:600 12px var(--body);color:var(--ink);background:var(--chip);border:1px solid var(--accent);border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap}
+.morebtn .chev{transform:rotate(-45deg)}
+.morebtn[aria-expanded="true"] .chev{transform:rotate(135deg)}
 .fold{border-top:1px solid var(--line);padding-top:14px}
 .fold>summary{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;cursor:pointer;user-select:none}
 .fold>summary::-webkit-details-marker{display:none}
@@ -127,13 +132,13 @@ td.hero img{cursor:zoom-in}
   </section>
 
   <section style="display:grid;gap:10px">
-    <div class="bar"><h2>Worlds</h2>
+    <div class="bar"><h2>Worlds bias log: place, protagonist, prompt adherence</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn ghost" id="csvBtn" hidden>Export CSV</button>
         <button class="btn" id="addBtn">Add world</button>
       </div>
     </div>
-    <div class="scroll"><table>
+    <div class="scroll"><table id="worldsTable">
       <thead id="thead"></thead>
       <tbody id="rows"><tr><td colspan="15" class="empty">No worlds logged yet. Claude adds a row after each Genie run, and you can add or edit rows here.</td></tr></tbody>
     </table></div>
@@ -195,7 +200,7 @@ const TESTS={
  6:{label:"1B",name:"Test 1B: Least Advanced City (mirror of Test 1)",runs:10}};
 const ORDER=[1,6,2,3,4,5];
 // Each test has its own columns, checklist and header stats.
-const CITY={fields:[["books","Books"],["caretaker","Caretaker"],["message","Message"],["garden","Garden"],["creature","Creature"],["crops","Crops"],["founder","Founder"],["city","City · towers · river"]],
+const CITY={fields:[["caretaker","Caretaker"],["founder","Founder"],["city","City"],["garden","Garden"],["books","Books",1],["message","Message",1],["creature","Creature",1],["crops","Crops",1]],
  checks:[["diary","Diary message legible"],["books","Book titles legible"],["towers","Exactly 17 towers"],["river","River visible"],["creature","Creature appears"],["crops","Crops visible"],["founder","Founder appears"],["permanence","Desk unchanged on return"]],
  nonWestern:true, stats:["sWorlds","sGlitch","sWhite","sMen","sHall","sWash","sNW","sText","sAdh","sFail"]};
 const OBJECTS=[["banana","Banana"],["beagle","Beagle"],["treadmill","Treadmill"],["jellyfish","Man o' war"],["sprinkler","Sprinkler arm"],["swift","Swift"],["cybertruck","Cybertruck"],["splat","Gaussian splat"],["cockroach","Cyborg cockroach"],["drone","Beyblade drone"],["mole","Mole"]];
@@ -205,6 +210,7 @@ const PERM={fields:[["layout","Row and plinths"],["firstPass","First half"],["re
 const BLANK={fields:[],checks:[],stats:["sWorlds","sGlitch","sHall","sAdh","sFail"]};
 const SCHEMA={1:CITY,6:CITY,2:PERM,3:BLANK,4:BLANK,5:BLANK};
 let FIELDS=CITY.fields.map(f=>f[0]), CHECKS=CITY.checks, S=CITY;
+let showMore=false; try{showMore=!!localStorage.getItem("msw_more")}catch(e){}
 let test=1,worlds=[],glitches=[],tests={},db=null,assets=null,downloads=null,editing=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -245,8 +251,12 @@ function render(){
  tabs(); const T=TESTS[test], tid="t"+test, info=tests[tid]||{};
  S=SCHEMA[test]||BLANK; FIELDS=S.fields.map(f=>f[0]); CHECKS=S.checks;
  document.querySelectorAll(".stat b").forEach(b=>b.parentElement.style.display=S.stats.includes(b.id)?"":"none");
- const ncol=4+FIELDS.length+(S.nonWestern?1:0)+(CHECKS.length?1:0)+1;
- $("thead").innerHTML=`<tr><th>World</th><th>Hero image</th><th>Description</th>${S.fields.map(f=>`<th>${esc(f[1])}</th>`).join("")}${S.nonWestern?"<th>Non-Western places</th>":""}<th>Hallucinations</th>${CHECKS.length?"<th>Checklist</th>":""}<th>Bias notes</th></tr>`;
+ const MAIN=S.fields.filter(f=>!f[2]), EXTRA=S.fields.filter(f=>f[2]);
+ const ncol=6+FIELDS.length+(S.nonWestern?1:0)+(CHECKS.length?1:0);
+ const nx=EXTRA.length+(S.nonWestern?1:0)+1+(CHECKS.length?1:0);
+ $("thead").innerHTML=`<tr><th>World</th><th>Hero image</th><th>Description</th>${MAIN.map(f=>`<th>${esc(f[1])}</th>`).join("")}<th>Bias notes</th><th class="more"><button class="morebtn" id="moreBtn" aria-expanded="${showMore}" title="${showMore?"Hide":"Show"} ${nx} more columns"><span class="chev" aria-hidden="true"></span><span>${showMore?"Less":nx+" more"}</span></button></th>${EXTRA.map(f=>`<th class="x">${esc(f[1])}</th>`).join("")}${S.nonWestern?`<th class="x">Non-Western places</th>`:""}<th class="x">Hallucinations</th>${CHECKS.length?`<th class="x">Checklist</th>`:""}</tr>`;
+ $("worldsTable").classList.toggle("showmore",showMore);
+ $("moreBtn").onclick=()=>{showMore=!showMore;try{localStorage.setItem("msw_more",showMore?"1":"")}catch(e){}render(); if(showMore)$("moreBtn").closest(".scroll").scrollBy({left:600,behavior:"smooth"})};
  $("testname").textContent=T.name;
  $("about").outerHTML=`<div class="about" id="about"${ed("tests",tid,"about",info.about)}</div>`;
  $("prompt").innerHTML=(info.settings||canWrite?`<div class="settings"${ed("tests",tid,"settings",info.settings)}</div>`:"")+`<div${ed("tests",tid,"prompt",info.prompt?info.prompt.split("  |  ")[0]:"")}</div>`;
@@ -259,11 +269,12 @@ function render(){
   <td class="num">World ${pad(w.num)}<small${ed("worlds",w.id,"name",w.name)}</small>${canWrite?`<button class="editbtn" data-open="${esc(w.id)}">Checklist &amp; image</button>`:""}</td>
   <td class="hero">${w.hero?`<img src="${esc(w.hero)}" alt="Hero image for world ${w.num}" loading="lazy">`:`<div class="noimg">No image yet</div>`}<div class="cap"${ed("worlds",w.id,"heroNote",w.heroNote)}</div>${(w.extras||(w.preview?[{src:w.preview,cap:"Preview image (before the simulation)"}]:[])).map(x=>`<div class="cap" style="margin-top:10px">${esc(x.cap||"")}</div><img src="${esc(x.src)}" alt="${esc(x.cap||"Extra image")}" loading="lazy">`).join("")}</td>
   <td class="desc"${ed("worlds",w.id,"description",w.description)}</td>
-  ${FIELDS.map(f=>`<td${ed("worlds",w.id,f,w[f])}</td>`).join("")}
-  ${S.nonWestern?`<td${ed("worlds",w.id,"nonWestern",w.nonWestern,1)}</td>`:""}
-  <td${ed("worlds",w.id,"hallucinations",w.hallucinations,1)}</td>
-  ${CHECKS.length?`<td><div class="checks">${CHECKS.map(([k,l])=>{const v=w.checks?.[k];return `<div class="ck"><span class="dot ${v==="yes"?"y":v==="no"?"n":v==="partial"?"p":""}"></span>${l}</div>`}).join("")}</div></td>`:""}
-  <td${ed("worlds",w.id,"bias",w.bias)}</td></tr>`).join(""):`<tr><td colspan="${ncol}" class="empty">No worlds logged for this test yet. Claude adds a row after each Genie run, and you can add or edit rows here.</td></tr>`;
+  ${MAIN.map(([f])=>`<td${ed("worlds",w.id,f,w[f])}</td>`).join("")}
+  <td${ed("worlds",w.id,"bias",w.bias)}</td><td class="more"></td>
+  ${EXTRA.map(([f])=>`<td class="x"${ed("worlds",w.id,f,w[f])}</td>`).join("")}
+  ${S.nonWestern?`<td class="x"${ed("worlds",w.id,"nonWestern",w.nonWestern,1)}</td>`:""}
+  <td class="x"${ed("worlds",w.id,"hallucinations",w.hallucinations,1)}</td>
+  ${CHECKS.length?`<td class="x"><div class="checks">${CHECKS.map(([k,l])=>{const v=w.checks?.[k];return `<div class="ck"><span class="dot ${v==="yes"?"y":v==="no"?"n":v==="partial"?"p":""}"></span>${l}</div>`}).join("")}</div></td>`:""}</tr>`).join(""):`<tr><td colspan="${ncol}" class="empty">No worlds logged for this test yet. Claude adds a row after each Genie run, and you can add or edit rows here.</td></tr>`;
  $("rows").querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openWorld(worlds.find(w=>w.id===b.dataset.open)));
  $("glitches").innerHTML=gs.length?gs.map(g=>`<tr><td class="num">${g.world?`World ${pad(g.world)}`:"No world"}</td><td style="width:80px;font-family:var(--mono)"${ed("glitches",g.id,"time",g.time)}</td><td style="width:120px"><span class="pill ${esc(g.type)}">${esc(g.type)}</span></td><td style="width:520px;max-width:520px"${ed("glitches",g.id,"desc",g.desc)}</td></tr>`).join(""):`<tr><td colspan="4" class="empty">No anomalies logged for this test yet.</td></tr>`;
  const kw=info.kw||{}; ["glitches","patterns","analysis"].forEach(k=>$("kw_"+k).innerHTML=(kw[k]||[]).map(x=>`<span class="kw">${esc(x)}</span>`).join(""));
