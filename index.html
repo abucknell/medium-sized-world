@@ -91,11 +91,17 @@ td.hero img{cursor:zoom-in}
 #lightbox.on{display:flex}
 #lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px}
 .chart{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;align-items:start}
-.chart.city{grid-template-columns:minmax(0,4fr) minmax(240px,1.15fr)}
-.cleft{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start}
+.overview{display:grid;grid-template-columns:minmax(0,4fr) minmax(240px,1.15fr);gap:14px;align-items:start}
+.overview.single{grid-template-columns:minmax(0,1fr)}
+.overview.single .ovright{display:none}
+.ovleft{display:grid;gap:14px;min-width:0}
+.ovright{display:grid;min-width:0}
+.psec{display:grid;gap:10px;margin-top:10px}
+.psec .prompt{max-width:none}
+.chart.cleft{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start}
 .cleft .g-nw,.cleft .g-hall{grid-column:span 2}
-@media (max-width:1000px){.chart.city{grid-template-columns:1fr}.cleft{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:560px){.cleft{grid-template-columns:1fr}.cleft .g-nw,.cleft .g-hall{grid-column:auto}}
+@media (max-width:1000px){.overview{grid-template-columns:1fr}.ovright{order:-1}.chart.cleft{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.chart.cleft{grid-template-columns:1fr}.cleft .g-nw,.cleft .g-hall{grid-column:auto}}
 .htype{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:start;font-size:13px;padding:4px 0;border-bottom:1px solid var(--line)}
 .htype:last-of-type{border-bottom:0}
 .hlabel{font-weight:600;padding-top:3px}
@@ -141,17 +147,14 @@ td.hero img{cursor:zoom-in}
       <div class="stat"><b id="sAdh">–</b><span>prompt checklist followed</span></div>
       <div class="stat"><b id="sFail">–</b><span>prompts refused/failed</span></div>
     </div>
-    <div class="chart" id="chart" hidden></div>
-  </section>
-
-  <section style="display:grid;gap:10px">
-    <h2>World prompt</h2>
-    <div class="prompt" id="prompt"></div>
-  </section>
-
-  <section style="display:grid;gap:10px">
-    <h2>Character prompt</h2>
-    <div class="prompt" id="charprompt"></div>
+    <div class="overview" id="overview">
+      <div class="ovleft">
+        <div class="chart" id="chart" hidden></div>
+        <div class="psec"><h2>World prompt</h2><div class="prompt" id="prompt"></div></div>
+        <div class="psec"><h2>Character prompt</h2><div class="prompt" id="charprompt"></div></div>
+      </div>
+      <div class="ovright" id="chartRight"></div>
+    </div>
   </section>
 
   <section style="display:grid;gap:10px">
@@ -276,9 +279,9 @@ function renderChart(ws){
  if(S.objects){const scored=ws.filter(w=>w.checks&&OBJECTS.some(([k])=>w.checks[k]));let ok=0,tot=0;scored.forEach(w=>OBJECTS.forEach(([k])=>{const v=w.checks[k];if(v){tot++;if(v==="yes")ok++}}));
   $("sObj").textContent=tot?`${ok} / ${tot}`:"–";
   const kept=OBJECTS.map(([k,l])=>[l,scored.filter(w=>w.checks[k]==="yes").length]);
-  $("chart").className="chart objects"; $("chart").hidden=!ws.length; $("chart").innerHTML=ws.length?group("Objects that stayed correct all run",kept,scored.length,`worlds where each object kept its place and form, out of ${scored.length}.`)+htypes(ws):"";return}
- const has=care.length||fo.length||arch.length; $("chart").hidden=!has; if(!has){$("chart").innerHTML="";return}
- $("chart").className="chart city"; $("chart").innerHTML=`<div class="cleft">`+group("Caretaker · gender",tally(care,"gender"),care.length,`out of ${care.length} worlds`,"g-cg")+group("Caretaker · race",tally(care,"raceShown"),care.length,`out of ${care.length} worlds`,"g-cr")+group("Founder · gender",tally(fo,"gender"),fo.length,`out of ${fo.length} worlds`,"g-fg")+group("Founder · race",tally(fo,"raceShown"),fo.length,`out of ${fo.length} worlds`,"g-fr")+group("Non-Western places",tally(ws,"nonWestern").concat(tally(ws,"nonWesternPreview").map(([k,n])=>[k+" (preview only)",n])),ws.length,`worlds showing each, out of ${ws.length}.`,"g-nw")+htypes(ws)+`</div>`+group("City location",tally(arch,"arch"),arch.length,`worlds showing each, out of ${arch.length}. A world can show several.`,"g-arch");
+  $("chartRight").innerHTML="";$("overview").classList.add("single"); $("chart").className="chart objects"; $("chart").hidden=!ws.length; $("chart").innerHTML=ws.length?group("Objects that stayed correct all run",kept,scored.length,`worlds where each object kept its place and form, out of ${scored.length}.`)+htypes(ws):"";return}
+ const has=care.length||fo.length||arch.length; $("chart").hidden=!has; $("overview").classList.toggle("single",!has); if(!has){$("chart").innerHTML="";$("chartRight").innerHTML="";return}
+ $("chart").className="chart cleft"; $("chart").innerHTML=group("Caretaker · gender",tally(care,"gender"),care.length,`out of ${care.length} worlds`,"g-cg")+group("Caretaker · race",tally(care,"raceShown"),care.length,`out of ${care.length} worlds`,"g-cr")+group("Founder · gender",tally(fo,"gender"),fo.length,`out of ${fo.length} worlds`,"g-fg")+group("Founder · race",tally(fo,"raceShown"),fo.length,`out of ${fo.length} worlds`,"g-fr")+group("Non-Western places",tally(ws,"nonWestern").concat(tally(ws,"nonWesternPreview").map(([k,n])=>[k+" (preview only)",n])),ws.length,`worlds showing each, out of ${ws.length}.`,"g-nw")+htypes(ws); $("chartRight").innerHTML=group("City location",tally(arch,"arch"),arch.length,`worlds showing each, out of ${arch.length}. A world can show several.`,"g-arch");
 }
 // Inline editing: editors click any text box, type, and click away to save.
 let canWrite=false, pendingRender=false;
