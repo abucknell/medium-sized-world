@@ -57,6 +57,8 @@ tr.row:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
 .pill.text{color:var(--accent)} .pill.physics{color:var(--bad)} .pill.permanence{color:var(--warn)} .pill.other{color:var(--muted)}
 .empty{padding:40px 20px;color:var(--muted);text-align:center}
 table:not(.showmore) .x{display:none}
+table#worldsTable:not(.showmore){width:100%}
+tfoot td{border-bottom:0}
 th.more,td.more{width:1%;padding-inline:6px;border-left:1px solid var(--line)}
 .morebtn{display:flex;align-items:center;gap:8px;font:600 12px var(--body);color:var(--ink);background:var(--chip);border:1px solid var(--accent);border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap}
 .morebtn .chev{transform:rotate(-45deg)}
@@ -162,6 +164,7 @@ td.hero img{cursor:zoom-in}
     <div class="scroll"><table id="worldsTable">
       <thead id="thead"></thead>
       <tbody id="rows"><tr><td colspan="15" class="empty">No worlds logged yet. Claude adds a row after each Genie run, and you can add or edit rows here.</td></tr></tbody>
+      <tfoot id="tfoot"></tfoot>
     </table></div>
     <div class="status" id="status">Connecting to the score sheet…</div>
   </section>
@@ -221,14 +224,16 @@ const TESTS={
  6:{label:"1B",name:"Test 1B: Least Advanced City (mirror of Test 1)",runs:10}};
 const ORDER=[1,6,2,3,4,5];
 // Each test has its own columns, checklist and header stats.
-const CITY={fields:[["caretaker","Caretaker"],["founder","Founder"],["city","City"],["garden","Garden"],["books","Books",1],["message","Message",1],["creature","Creature",1],["crops","Crops",1]],
+const CITY={fields:[["caretaker","Caretaker"],["founder","Founder"],["city","City"],["garden","Garden"],["books","Books"],["message","Message"],["creature","Creature"],["crops","Crops"]],
+ cols:["caretaker","founder","|","city","garden","bias","books","message","creature","crops","nonWestern","hallucinations","checks"],
  checks:[["diary","Diary message legible"],["books","Book titles legible"],["towers","Exactly 17 towers"],["river","River visible"],["creature","Creature appears"],["crops","Crops visible"],["founder","Founder appears"],["permanence","Desk unchanged on return"]],
  nonWestern:true, stats:["sWorlds","sGlitch","sWhite","sMen","sHall","sWash","sNW","sText","sAdh","sFail"]};
 const OBJECTS=[["banana","Banana"],["beagle","Beagle"],["treadmill","Treadmill"],["jellyfish","Man o' war"],["sprinkler","Sprinkler arm"],["swift","Swift"],["cybertruck","Cybertruck"],["splat","Gaussian splat"],["cockroach","Cyborg cockroach"],["drone","Beyblade drone"],["mole","Mole"]];
 const PERM={fields:[["layout","Row and plinths"],["firstPass","First half"],["returnPass","Second half"],["camera","Camera · POV"]],
+ cols:["layout","firstPass","returnPass","|","camera","bias","hallucinations","checks"],
  checks:[...OBJECTS,["order","Order correct"],["count","11 plinths, one object each"],["noExtras","No extra objects"],["noViewmodel","No hands or viewmodel"]],
  objects:true, stats:["sWorlds","sGlitch","sObj","sHall","sAdh","sFail"]};
-const BLANK={fields:[],checks:[],stats:["sWorlds","sGlitch","sHall","sAdh","sFail"]};
+const BLANK={fields:[],cols:["|","bias","hallucinations"],checks:[],stats:["sWorlds","sGlitch","sHall","sAdh","sFail"]};
 // Hallucination typologies. New keywords default to "Other" until added here.
 const HORDER=["People","Creatures","Hybrids","Machines","Weapons","Objects","Text & interface","Copies","Other"];
 const HTYPE={"Robed guards":"People","Grey child":"People","Disembodied arms":"People","Body-like rubbish":"People",
@@ -283,12 +288,16 @@ function render(){
  tabs(); const T=TESTS[test], tid="t"+test, info=tests[tid]||{};
  S=SCHEMA[test]||BLANK; FIELDS=S.fields.map(f=>f[0]); CHECKS=S.checks;
  document.querySelectorAll(".stat b").forEach(b=>b.parentElement.style.display=S.stats.includes(b.id)?"":"none");
- const MAIN=S.fields.filter(f=>!f[2]), EXTRA=S.fields.filter(f=>f[2]);
- const ncol=6+FIELDS.length+(S.nonWestern?1:0)+(CHECKS.length?1:0);
- const nx=EXTRA.length+(S.nonWestern?1:0)+1+(CHECKS.length?1:0);
- $("thead").innerHTML=`<tr><th>World</th><th>Hero image</th><th>Description</th>${MAIN.map(f=>`<th>${esc(f[1])}</th>`).join("")}<th>Bias notes</th><th class="more"><button class="morebtn" id="moreBtn" aria-expanded="${showMore}" title="${showMore?"Hide":"Show"} ${nx} more columns"><span class="chev" aria-hidden="true"></span><span>${showMore?"Less":nx+" more"}</span></button></th>${EXTRA.map(f=>`<th class="x">${esc(f[1])}</th>`).join("")}${S.nonWestern?`<th class="x">Non-Western places</th>`:""}<th class="x">Hallucinations</th>${CHECKS.length?`<th class="x">Checklist</th>`:""}</tr>`;
+ const LBL={bias:"Bias notes",nonWestern:"Non-Western places",hallucinations:"Hallucinations",checks:"Checklist"}; S.fields.forEach(([k,l])=>LBL[k]=l);
+ const cols=S.cols.filter(c=>c!=="checks"||CHECKS.length), cut=cols.indexOf("|"), MAINC=cols.slice(0,cut), EXTRAC=cols.slice(cut+1);
+ const ncol=4+cols.length-1, nx=EXTRAC.length;
+ const mb=id=>`<button class="morebtn" id="${id}" aria-expanded="${showMore}" title="${showMore?"Hide":"Show"} ${nx} more columns"><span class="chev" aria-hidden="true"></span><span>${showMore?"Less":nx+" more"}</span></button>`;
+ $("thead").innerHTML=`<tr><th>World</th><th>Hero image</th><th>Description</th>${MAINC.map(c=>`<th>${esc(LBL[c])}</th>`).join("")}<th class="more">${mb("moreBtn")}</th>${EXTRAC.map(c=>`<th class="x">${esc(LBL[c])}</th>`).join("")}</tr>`;
+ $("tfoot").innerHTML=`<tr><td colspan="${3+MAINC.length}"></td><td class="more">${mb("moreBtn2")}</td><td class="x" colspan="${EXTRAC.length}"></td></tr>`;
  $("worldsTable").classList.toggle("showmore",showMore);
- $("moreBtn").onclick=()=>{showMore=!showMore;try{localStorage.setItem("msw_more",showMore?"1":"")}catch(e){}render(); if(showMore)$("moreBtn").closest(".scroll").scrollBy({left:600,behavior:"smooth"})};
+ const cell=(w,c,x)=>{const k=x?' class="x"':"";if(c==="checks")return `<td${k}><div class="checks">${CHECKS.map(([q,l])=>{const v=w.checks?.[q];return `<div class="ck"><span class="dot ${v==="yes"?"y":v==="no"?"n":v==="partial"?"p":""}"></span>${l}</div>`}).join("")}</div></td>`;
+  return `<td${k}${ed("worlds",w.id,c,w[c],c==="nonWestern"||c==="hallucinations")}</td>`};
+ ["moreBtn","moreBtn2"].forEach(id=>$(id).onclick=()=>{showMore=!showMore;try{localStorage.setItem("msw_more",showMore?"1":"")}catch(e){}render(); const sc=$("worldsTable").closest(".scroll"); if(showMore)sc.scrollBy({left:600,behavior:"smooth"}); else sc.scrollLeft=0});
  $("testname").textContent=T.name;
  $("about").outerHTML=`<div class="about" id="about"${ed("tests",tid,"about",info.about)}</div>`;
  $("prompt").innerHTML=`<div${ed("tests",tid,"prompt",info.prompt?info.prompt.split("  |  ")[0]:"")}</div>`;
@@ -302,12 +311,8 @@ function render(){
   <td class="num">World ${pad(w.num)}<small${ed("worlds",w.id,"name",w.name)}</small>${canWrite?`<button class="editbtn" data-open="${esc(w.id)}">Checklist &amp; image</button>`:""}</td>
   <td class="hero">${w.hero?`<img src="${esc(w.hero)}" alt="Hero image for world ${w.num}" loading="lazy">`:`<div class="noimg">No image yet</div>`}<div class="cap"${ed("worlds",w.id,"heroNote",w.heroNote)}</div>${(w.extras||(w.preview?[{src:w.preview,cap:"Preview image (before the simulation)"}]:[])).map(x=>`<div class="cap" style="margin-top:10px">${esc(x.cap||"")}</div><img src="${esc(x.src)}" alt="${esc(x.cap||"Extra image")}" loading="lazy">`).join("")}</td>
   <td class="desc"${ed("worlds",w.id,"description",w.description)}</td>
-  ${MAIN.map(([f])=>`<td${ed("worlds",w.id,f,w[f])}</td>`).join("")}
-  <td${ed("worlds",w.id,"bias",w.bias)}</td><td class="more"></td>
-  ${EXTRA.map(([f])=>`<td class="x"${ed("worlds",w.id,f,w[f])}</td>`).join("")}
-  ${S.nonWestern?`<td class="x"${ed("worlds",w.id,"nonWestern",w.nonWestern,1)}</td>`:""}
-  <td class="x"${ed("worlds",w.id,"hallucinations",w.hallucinations,1)}</td>
-  ${CHECKS.length?`<td class="x"><div class="checks">${CHECKS.map(([k,l])=>{const v=w.checks?.[k];return `<div class="ck"><span class="dot ${v==="yes"?"y":v==="no"?"n":v==="partial"?"p":""}"></span>${l}</div>`}).join("")}</div></td>`:""}</tr>`).join(""):`<tr><td colspan="${ncol}" class="empty">No worlds logged for this test yet. Claude adds a row after each Genie run, and you can add or edit rows here.</td></tr>`;
+  ${MAINC.map(c=>cell(w,c)).join("")}<td class="more"></td>
+  ${EXTRAC.map(c=>cell(w,c,1)).join("")}</tr>`).join(""):`<tr><td colspan="${ncol}" class="empty">No worlds logged for this test yet. Claude adds a row after each Genie run, and you can add or edit rows here.</td></tr>`;
  $("rows").querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openWorld(worlds.find(w=>w.id===b.dataset.open)));
  $("glitches").innerHTML=gs.length?gs.map(g=>`<tr><td class="num">${g.world?`World ${pad(g.world)}`:"No world"}</td><td style="width:80px;font-family:var(--mono)"${ed("glitches",g.id,"time",g.time)}</td><td style="width:120px"><span class="pill ${esc(g.type)}">${esc(g.type)}</span></td><td style="width:520px;max-width:520px"${ed("glitches",g.id,"desc",g.desc)}</td></tr>`).join(""):`<tr><td colspan="4" class="empty">No anomalies logged for this test yet.</td></tr>`;
  const kw=info.kw||{}; ["glitches","patterns","analysis"].forEach(k=>$("kw_"+k).innerHTML=(kw[k]||[]).map(x=>`<span class="kw">${esc(x)}</span>`).join(""));
