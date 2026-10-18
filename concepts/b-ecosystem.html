@@ -83,13 +83,32 @@ details.frame[open]>summary::after{background:linear-gradient(var(--ink),var(--i
 .ana p{max-width:75ch}
 .lb{position:fixed;inset:0;background:rgba(255,255,255,.96);display:none;place-items:center;z-index:20;padding:24px;cursor:zoom-out}
 .lb.on{display:grid}
-.lb figure{margin:0;max-width:min(1100px,100%)}
+.lb figure{margin:0;width:min(1100px,100% - 170px)}
+.imw{position:relative}
+.wa{all:unset;cursor:pointer;width:64px;height:40px;display:inline-grid;place-items:center}
+.wa svg{width:64px;height:40px;overflow:visible}
+.wa path{fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wa.prev svg{transform:scaleX(-1)}
+.wa:focus-visible{outline:1px dashed var(--green);outline-offset:4px;border-radius:8px}
+.imw .wa{position:absolute;top:50%;transform:translateY(-50%)}
+.imw .prev{left:-78px}.imw .next{right:-78px}
+.find{position:fixed;left:50%;bottom:14px;transform:translate(-50%,140%);transition:transform .25s;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--green);border-radius:999px;padding:4px 8px 4px 16px;z-index:25;box-shadow:0 6px 30px rgba(0,0,0,.08);max-width:calc(100% - 32px)}
+.find.on{transform:translate(-50%,0)}
+.find b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.find .n{color:var(--soft);white-space:nowrap}
+.find .wa,.find .wa svg{width:44px;height:30px}
+.find .x{all:unset;cursor:pointer;font-size:20px;line-height:1;padding:0 8px 2px}
+mark.hit{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px}
+mark.hit.cur{box-shadow:0 0 0 2px var(--green)}
+.card.full p{-webkit-line-clamp:unset;display:block}
+.map .pill{cursor:pointer}
+.map .pill:hover rect,.map .pill:focus-visible rect{fill:var(--hl)}
 .lb img{width:100%;display:block;border-radius:18px}
 .lb figcaption{margin-top:12px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
 .lb figcaption p{margin:0;grid-column:2;color:#333;max-width:80ch}
 .concept{position:fixed;right:14px;bottom:14px;background:var(--ink);color:#fff;padding:6px 12px;font-size:12px;border-radius:999px;z-index:30}
 .concept a{color:#8dffb4}
-@media (max-width:820px){header{padding:24px 16px 0}main{padding:28px 16px 120px}.two{grid-template-columns:1fr}.frame{padding:22px 18px}.frame.round{border-radius:28px;padding:26px 18px}.frame.round>.lbl{left:28px}.gl{grid-template-columns:36px 1fr}.gl .mono:nth-child(2){grid-column:2}.bub{width:92px}.strip figure,.strip img{width:180px}.strip img{height:101px}}
+@media (max-width:820px){.lb figure{width:100%}.imw .wa{background:rgba(255,255,255,.85);border-radius:999px}.imw .prev{left:6px}.imw .next{right:6px}.find{bottom:60px}header{padding:24px 16px 0}main{padding:28px 16px 120px}.two{grid-template-columns:1fr}.frame{padding:22px 18px}.frame.round{border-radius:28px;padding:26px 18px}.frame.round>.lbl{left:28px}.gl{grid-template-columns:36px 1fr}.gl .mono:nth-child(2){grid-column:2}.bub{width:92px}.strip figure,.strip img{width:180px}.strip img{height:101px}}
 @media (prefers-reduced-motion:reduce){.strip .track,.map .float{animation:none}.card img{transition:none}.strip{overflow-x:auto}}
 </style></head><body>
 <header>
@@ -110,7 +129,8 @@ details.frame[open]>summary::after{background:linear-gradient(var(--ink),var(--i
   <details class="frame"><summary><span class="t">Patterns</span><span id="kwp"></span></summary><div class="notes" id="pat"></div></details>
   <details class="frame"><summary><span class="t">Analysis</span><span id="kwa"></span></summary><div class="ana" id="ana"></div></details>
 </main>
-<div class="lb" id="lb"><figure><img alt=""><figcaption></figcaption></figure></div>
+<div class="lb" id="lb"><figure><div class="imw"><img alt=""><button class="wa prev" aria-label="Previous image">${WA}</button><button class="wa next" aria-label="Next image">${WA}</button></div><figcaption></figcaption></figure></div>
+<div class="find" id="find" role="search"><span class="mono">Find</span><b class="q"></b><span class="mono n"></span><button class="wa prev" aria-label="Previous match">${WA}</button><button class="wa next" aria-label="Next match">${WA}</button><button class="x" aria-label="Close find">×</button></div>
 <div class="concept">Concept B · Ecosystem · <a href="index.html">all concepts</a></div>
 <script src="data.js"></script><script src="common.js"></script>
 <script>
@@ -125,22 +145,56 @@ const MAP=[
  {l:"3",x:690,y:525},{l:"4",x:470,y:420},{l:"5",x:500,y:170}];
 // Untested models drift in their own zones, growing tendrils that reach for nothing yet.
 const BLOBS=[
- {name:"PAN",zone:[110,400,330,560],r:40},
- {name:"Marble",zone:[1210,40,1370,170],r:40}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,
-  t:Array.from({length:7},(_,j)=>({a:j/7*Math.PI*2+i,len:18+Math.random()*40,ph:Math.random()*6,sp:.4+Math.random()*.6}))}));
+ {name:"PAN",zone:[110,400,330,560],r:32},
+ {name:"Marble",zone:[1210,40,1370,170],r:32}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,fear:0,
+  t:Array.from({length:7},(_,j)=>({a:j/7*Math.PI*2+i,len:14+Math.random()*32,ph:Math.random()*6,sp:.4+Math.random()*.6}))}));
 const STILL=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function blobFrame(ms){
  const g=document.getElementById("blobs");if(!g)return;const t=ms/1000;let h="";
  BLOBS.forEach(b=>{
   if(!STILL){b.vx+=(Math.random()-.5)*.06;b.vy+=(Math.random()-.5)*.06;b.vx*=.985;b.vy*=.985;
-   const [x0,y0,x1,y1]=b.zone;if(b.x<x0)b.vx+=.03;if(b.x>x1)b.vx-=.03;if(b.y<y0)b.vy+=.03;if(b.y>y1)b.vy-=.03;b.x+=b.vx;b.y+=b.vy}
-  b.t.forEach(d=>{const a=d.a+Math.sin(t*d.sp*.5+d.ph)*.35,L=STILL?d.len:d.len*(.65+.35*Math.sin(t*d.sp+d.ph)),r=b.r;
+   const [x0,y0,x1,y1]=b.zone;if(b.x<x0)b.vx+=.03;if(b.x>x1)b.vx-=.03;if(b.y<y0)b.vy+=.03;if(b.y>y1)b.vy-=.03;b.x+=b.vx;b.y+=b.vy;
+   if(b.x<b.r+50||b.x>1440-b.r-50)b.vx*=-.8;if(b.y<b.r+50||b.y>620-b.r-30)b.vy*=-.8;b.x=Math.min(Math.max(b.x,b.r+50),1440-b.r-50);b.y=Math.min(Math.max(b.y,b.r+50),620-b.r-30);
+   b.fear*=.985;b.clock=(b.clock||0)+(1+b.fear*4)/60}
+  const bt=STILL?0:b.clock;
+  b.t.forEach(d=>{const t=bt,a=d.a+Math.sin(t*d.sp*.5+d.ph)*.35,L=STILL?d.len:d.len*(.65+.35*Math.sin(t*d.sp+d.ph)),r=b.r;
    const sx=b.x+Math.cos(a)*r,sy=b.y+Math.sin(a)*r,ex=b.x+Math.cos(a)*(r+L),ey=b.y+Math.sin(a)*(r+L);
    const bend=Math.sin(t*d.sp*1.3+d.ph)*L*.45,mx=(sx+ex)/2-Math.sin(a)*bend,my=(sy+ey)/2+Math.cos(a)*bend;
-   h+=`<path d="M${sx.toFixed(1)},${sy.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}" stroke="var(--ink)" stroke-width=".8" fill="none" stroke-linecap="round"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="1.6" fill="var(--green)"/>`});
-  h+=`<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r}" fill="var(--ink)"/><text x="${b.x.toFixed(1)}" y="${(b.y+4).toFixed(1)}" text-anchor="middle" fill="#fff" style="font-size:13px">${b.name}</text><text x="${b.x.toFixed(1)}" y="${(b.y+b.r+18).toFixed(1)}" text-anchor="middle" style="font-size:11px;fill:var(--soft);paint-order:stroke;stroke:#fff;stroke-width:5px">not yet tested</text>`});
- g.innerHTML=h;if(!STILL)requestAnimationFrame(blobFrame);
+   h+=`<path d="M${sx.toFixed(1)},${sy.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}" stroke="var(--ink)" stroke-width=".8" fill="none" stroke-linecap="round"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="2.6" fill="var(--hl)"/>`});
+  h+=`<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r}" fill="var(--ink)" style="cursor:pointer"/><text x="${b.x.toFixed(1)}" y="${(b.y+4).toFixed(1)}" text-anchor="middle" fill="#fff" style="font-size:12px;pointer-events:none">${b.name}</text>`});
+ g.innerHTML=h;wigFrame();if(!STILL)requestAnimationFrame(blobFrame);
 }
+// Click a model and it wriggles away from the cursor.
+document.getElementById("map").addEventListener("pointerdown",e=>{const svg=e.currentTarget,pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+ const q=pt.matrixTransform(svg.getScreenCTM().inverse());
+ BLOBS.forEach(b=>{const dx=b.x-q.x,dy=b.y-q.y,d=Math.hypot(dx,dy)||1;if(d<b.r+24){b.vx+=dx/d*3.2;b.vy+=dy/d*3.2;b.fear=1}})});
+// Green arrows that wriggle like the tendrils when hovered.
+const WA=`<svg viewBox="0 0 64 40" aria-hidden="true"><path/></svg>`;
+function wigFrame(){const now=performance.now()/1000;document.querySelectorAll(".wa").forEach(el=>{
+ el._a=(el._a||0)+(((el.matches(":hover")||el.matches(":focus-visible"))&&!STILL?1:0)-(el._a||0))*.12;const A=el._a,t=now*7;
+ const y1=20-9*A*Math.sin(t),y2=20+9*A*Math.sin(t+1.6),hy=20+3*A*Math.sin(t+.8),k=4*A*Math.sin(t*1.3);
+ el.querySelector("path").setAttribute("d",`M6,${20+4*A*Math.sin(t+2.4)} C22,${y1} 36,${y2} 52,${hy} M52,${hy} L${40+k*.3},${10+k} M52,${hy} L${40-k*.3},${30+k}`)})}
+// Find: highlight every place a keyword appears and step through the hits.
+const FIND={hits:[],i:0};
+function clearHits(){document.querySelectorAll("main mark.hit").forEach(m=>{const p=m.parentNode;p.replaceChild(document.createTextNode(m.textContent),m);p.normalize()});FIND.hits=[]}
+function kwRegex(k){const stem=w=>/^(wo)?m[ae]n$/i.test(w)?w.slice(0,-2)+"[ae]n":w.replace(/(es|s)$/i,"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&");const ws=k.trim().split(/\s+/);
+ return [new RegExp("\\b"+ws.map(stem).join("[\\s-]+"),"gi"),new RegExp("\\b("+ws.filter(w=>w.length>3).map(stem).join("|")+")","gi")]}
+function findKw(k){clearHits();const root=document.querySelector("main");
+ const nodes=[];const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest(".kw,summary,script")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});while(tw.nextNode())nodes.push(tw.currentNode);
+ for(const re of kwRegex(k)){if(re.source.endsWith("()"))continue;
+  nodes.forEach(n=>{const txt=n.nodeValue;re.lastIndex=0;if(!re.test(txt))return;re.lastIndex=0;const f=document.createDocumentFragment();let last=0,m;
+   while((m=re.exec(txt))){const end=Math.min(txt.length,m.index+m[0].length+(txt.slice(m.index+m[0].length).match(/^\w*/)[0].length));f.append(txt.slice(last,m.index));const mk=document.createElement("mark");mk.className="hit";mk.textContent=txt.slice(m.index,end);f.append(mk);last=end;re.lastIndex=end}
+   f.append(txt.slice(last));n.parentNode.replaceChild(f,n)});
+  FIND.hits=[...root.querySelectorAll("mark.hit")];if(FIND.hits.length)break}
+ const bar=document.getElementById("find");bar.querySelector(".q").textContent=k;bar.classList.add("on");FIND.i=0;goHit(0)}
+function goHit(d){const bar=document.getElementById("find"),n=FIND.hits.length;
+ bar.querySelector(".n").textContent=n?`${FIND.i+1} / ${n}`:"no matches";if(!n)return;
+ FIND.i=(FIND.i+d+n)%n;bar.querySelector(".n").textContent=`${FIND.i+1} / ${n}`;
+ FIND.hits.forEach((h,j)=>h.classList.toggle("cur",j===FIND.i));const h=FIND.hits[FIND.i];
+ let dt=h.closest("details");while(dt){dt.open=true;dt=dt.parentElement.closest("details")}
+ const c=h.closest(".card");if(c)c.classList.add("full");
+ h.scrollIntoView({behavior:STILL?"auto":"smooth",block:"center"})}
+function closeFind(){clearHits();document.getElementById("find").classList.remove("on");document.querySelectorAll(".card.full").forEach(c=>c.classList.remove("full"))}
 function drawMap(){
  const cx=720,cy=300,svg=document.getElementById("map");let s="<g id='blobs'></g>";
  const R=m=>m.plan?26:24+Math.sqrt(C.worlds(C.test(m.l)).length)*7;
@@ -149,7 +203,7 @@ function drawMap(){
  MAP.forEach(m=>{const f=m.from?at(m.from):{x:cx,y:cy};s+=`<path class="edge${m.plan?" k":""}" d="${curve(f.x,f.y,m.x,m.y)}"/>`});
  MAP.filter(m=>!m.plan&&m.side).forEach((m,i)=>{const t=C.test(m.l),kw=((C.info(t).kw||{}).patterns||[]).slice(0,3),r=R(m),right=m.side==="right";
   kw.forEach((k,j)=>{const w=k.length*6.6+22,ky=m.y+(j-(kw.length-1)/2)*30,kx0=right?m.x+r+34:m.x-r-34-w,ax=right?kx0:kx0+w;
-  s+=`<path class="edge k" d="M${m.x+(right?r:-r)},${m.y} L${ax},${ky}"/><g class="pill float" style="animation-delay:${-(i*3+j)*.7}s"><rect x="${kx0}" y="${ky-11}" width="${w}" height="22" rx="11"/><text x="${kx0+w/2}" y="${ky}">${esc(k)}</text></g>`})});
+  s+=`<path class="edge k" d="M${m.x+(right?r:-r)},${m.y} L${ax},${ky}"/><g class="pill float" data-k="${esc(k)}" data-t="${t.label}" tabindex="0" role="button" aria-label="Find ${esc(k)}" style="animation-delay:${-(i*3+j)*.7}s"><rect x="${kx0}" y="${ky-11}" width="${w}" height="22" rx="11"/><text x="${kx0+w/2}" y="${ky}">${esc(k)}</text></g>`})});
  s+=`<g class="core"><circle cx="${cx}" cy="${cy}" r="46"/><text x="${cx}" y="${cy+4}" style="font-size:13px">Genie-3</text></g>`;
  MAP.forEach(m=>{const r=R(m);
   if(m.plan){s+=`<g class="plan"><circle cx="${m.x}" cy="${m.y}" r="${r}" fill="#fff" stroke="var(--green)" stroke-dasharray="3 3"/><text x="${m.x}" y="${m.y+4}" text-anchor="middle" style="font-size:12px;fill:var(--green)">Test ${m.l}</text><text x="${m.x}" y="${m.y+r+18}" text-anchor="middle" style="font-size:12px">${esc(m.name)}</text><text x="${m.x}" y="${m.y+r+33}" text-anchor="middle" style="font-size:11px;fill:var(--soft)">${esc(m.sub)}</text></g>`;return}
@@ -157,6 +211,7 @@ function drawMap(){
   s+=`<g class="node${t===T?" on":""}" data-t="${t.label}" tabindex="0" role="button" aria-label="Test ${t.label}"><circle cx="${m.x}" cy="${m.y}" r="${r}"/><text class="lab" x="${m.x}" y="${m.y-2}">Test ${t.label}</text><text class="mono" x="${m.x}" y="${m.y+14}" style="font-size:10.5px">${n}/${t.runs}</text><text x="${m.x}" y="${m.y+r+18}" style="font-size:12px">${esc(m.sub||t.name)}</text></g>`});
  svg.innerHTML=s;if(STILL)blobFrame(0);else if(!window._blob){window._blob=1;requestAnimationFrame(blobFrame)}
  svg.querySelectorAll(".node").forEach(g=>{const go=()=>{T=C.test(g.dataset.t);history.replaceState(0,"","?t="+T.label);render();document.querySelector("main").scrollIntoView({behavior:"smooth"})};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
+ svg.querySelectorAll(".pill").forEach(g=>{const go=()=>{const t=C.test(g.dataset.t);if(t!==T){T=t;history.replaceState(0,"","?t="+T.label);render()}findKw(g.dataset.k)};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
 }
 let LB=[],LI=-1;
 function strip(){
@@ -172,13 +227,19 @@ function strip(){
 }
 function lightbox(id){LB=C.worlds(T).filter(w=>w.hero);LI=LB.findIndex(w=>w.id===id);if(LI<0)return;showLB()}
 function showLB(){const w=LB[LI],lb=document.getElementById("lb");lb.querySelector("img").src=w.hero;
- lb.querySelector("figcaption").innerHTML=`<span class="mono g">${T.label}·${pad(w.num)}</span><b style="font-weight:500">${esc(w.name)}</b><p>${esc(w.heroNote||w.description||"")}</p>${w.bias?`<p class="g">${esc(w.bias)}</p>`:""}<p class="mono" style="color:var(--soft)">${LI+1} / ${LB.length} · use ← → to move, Esc to close</p>`;lb.classList.add("on")}
+ lb.querySelector("figcaption").innerHTML=`<span class="mono g">${T.label}·${pad(w.num)}</span><b style="font-weight:500">${esc(w.name)}</b><p>${esc(w.heroNote||w.description||"")}</p>${w.bias?`<p class="g">${esc(w.bias)}</p>`:""}<p class="mono" style="color:var(--soft)">${LI+1} / ${LB.length} · ← → to move · Esc to close</p>`;lb.classList.add("on")}
+document.querySelectorAll(".wa").forEach(b=>b.innerHTML=WA);wigFrame();
+const lbStep=d=>{LI=(LI+d+LB.length)%LB.length;showLB()};
+document.querySelector("#lb .prev").onclick=e=>{e.stopPropagation();lbStep(-1)};document.querySelector("#lb .next").onclick=e=>{e.stopPropagation();lbStep(1)};
+document.querySelector("#find .prev").onclick=()=>goHit(-1);document.querySelector("#find .next").onclick=()=>goHit(1);document.querySelector("#find .x").onclick=closeFind;
 document.getElementById("lb").onclick=e=>e.currentTarget.classList.remove("on");
-document.addEventListener("keydown",e=>{const lb=document.getElementById("lb");if(!lb.classList.contains("on"))return;
+document.addEventListener("keydown",e=>{const lb=document.getElementById("lb");
+ if(!lb.classList.contains("on")){if(!document.getElementById("find").classList.contains("on"))return;
+  if(e.key==="Escape")closeFind();else if(e.key==="Enter"&&!e.target.closest(".pill,.node,button")||e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();goHit(e.key==="ArrowLeft"||e.shiftKey?-1:1)}return}
  if(e.key==="Escape")lb.classList.remove("on");
- else if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();LI=(LI+(e.key==="ArrowRight"?1:-1)+LB.length)%LB.length;showLB()}});
+ else if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();lbStep(e.key==="ArrowRight"?1:-1)}});
 function render(){
- drawMap();strip();
+ closeFind();drawMap();strip();
  const I=C.info(T),S=C.stats(T),ws=C.worlds(T),gs=C.glitches(T);
  tnum.textContent=T.label;tname.textContent=I.title||T.name;tcount.textContent=`${S.worlds} of ${S.runs} worlds logged`;
  const B=[];const bub=(n,of,l)=>{const r=Math.max(.15,of?n/of:0),d=Math.round(46+Math.sqrt(of||1)*14);B.push(`<div class="bub"><div class="c" style="width:${d}px;height:${d}px"><i style="height:${Math.round(r*100)}%"></i><b>${n}</b></div><span>${l}</span></div>`)};
