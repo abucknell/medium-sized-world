@@ -11,7 +11,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Inte
 header{padding:32px 40px 0;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-start}
 header h1{font-weight:300;font-size:clamp(34px,5vw,64px);line-height:.95;letter-spacing:-.02em;margin:0}
 header p{max-width:36ch;margin:6px 0 0;color:var(--soft)}
-.map{width:100%;max-width:1200px;margin:0 auto;display:block;padding:0 16px}
+.map{width:100%;margin:0 auto;display:block;padding:0 16px}
 .map svg{width:100%;height:auto;display:block;overflow:visible}
 .map .edge{stroke:var(--ink);stroke-width:.6;fill:none}
 .map .edge.k{stroke:var(--green);stroke-dasharray:2 3}
@@ -96,7 +96,7 @@ details.frame[open]>summary::after{background:linear-gradient(var(--ink),var(--i
   <h1>Medium<br>Sized<br>World</h1>
   <p>A research system for testing bias, glitch, semantic drift, reality gaps and collapse in emerging world models. Models featured in the experiment include Genie-3, Marble, and PAN.</p>
 </header>
-<div class="map"><svg id="map" viewBox="0 0 1200 560" role="img" aria-label="Map of the six tests"></svg></div>
+<div class="map"><svg id="map" viewBox="0 0 1440 620" role="img" aria-label="Map of the world models and their tests"></svg></div>
 <div class="strip" id="strip"><div class="track" id="track"></div></div>
 <main>
   <div class="testhead"><span class="num mono" id="tnum"></span><h2 id="tname"></h2><span class="mono" id="tcount"></span></div>
@@ -118,13 +118,31 @@ const {esc,pad}=C;let T=C.test(new URLSearchParams(location.search).get("t")||"1
 const NS="http://www.w3.org/2000/svg";
 // Hand-placed map. A sub-test springs out of its parent instead of out of Genie.
 const MAP=[
- {l:"1A",x:380,y:150,side:"left"},
- {l:"1B",x:190,y:320,from:"1A",side:"right"},
- {l:"2",x:830,y:150,side:"right",sub:"Object Permanence: real-world objects"},
- {plan:true,l:"2B",x:1050,y:330,from:"2",name:"Invented agents",sub:"Overworld story world · planned"},
- {l:"3",x:900,y:455},{l:"4",x:600,y:490},{l:"5",x:330,y:470}];
+ {l:"1A",x:850,y:110,side:"right"},
+ {l:"1B",x:1040,y:265,from:"1A",side:"right"},
+ {l:"2",x:960,y:445,side:"right",sub:"Object Permanence: real-world objects"},
+ {plan:true,l:"2B",x:1215,y:545,from:"2",name:"Invented agents",sub:"Overworld story world · planned"},
+ {l:"3",x:690,y:525},{l:"4",x:470,y:420},{l:"5",x:500,y:170}];
+// Untested models drift in their own zones, growing tendrils that reach for nothing yet.
+const BLOBS=[
+ {name:"PAN",zone:[110,400,330,560],r:40},
+ {name:"Marble",zone:[1210,40,1370,170],r:40}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,
+  t:Array.from({length:7},(_,j)=>({a:j/7*Math.PI*2+i,len:18+Math.random()*40,ph:Math.random()*6,sp:.4+Math.random()*.6}))}));
+const STILL=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function blobFrame(ms){
+ const g=document.getElementById("blobs");if(!g)return;const t=ms/1000;let h="";
+ BLOBS.forEach(b=>{
+  if(!STILL){b.vx+=(Math.random()-.5)*.06;b.vy+=(Math.random()-.5)*.06;b.vx*=.985;b.vy*=.985;
+   const [x0,y0,x1,y1]=b.zone;if(b.x<x0)b.vx+=.03;if(b.x>x1)b.vx-=.03;if(b.y<y0)b.vy+=.03;if(b.y>y1)b.vy-=.03;b.x+=b.vx;b.y+=b.vy}
+  b.t.forEach(d=>{const a=d.a+Math.sin(t*d.sp*.5+d.ph)*.35,L=STILL?d.len:d.len*(.65+.35*Math.sin(t*d.sp+d.ph)),r=b.r;
+   const sx=b.x+Math.cos(a)*r,sy=b.y+Math.sin(a)*r,ex=b.x+Math.cos(a)*(r+L),ey=b.y+Math.sin(a)*(r+L);
+   const bend=Math.sin(t*d.sp*1.3+d.ph)*L*.45,mx=(sx+ex)/2-Math.sin(a)*bend,my=(sy+ey)/2+Math.cos(a)*bend;
+   h+=`<path d="M${sx.toFixed(1)},${sy.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}" stroke="var(--ink)" stroke-width=".8" fill="none" stroke-linecap="round"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="1.6" fill="var(--green)"/>`});
+  h+=`<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r}" fill="var(--ink)"/><text x="${b.x.toFixed(1)}" y="${(b.y+4).toFixed(1)}" text-anchor="middle" fill="#fff" style="font-size:13px">${b.name}</text><text x="${b.x.toFixed(1)}" y="${(b.y+b.r+18).toFixed(1)}" text-anchor="middle" style="font-size:11px;fill:var(--soft);paint-order:stroke;stroke:#fff;stroke-width:5px">not yet tested</text>`});
+ g.innerHTML=h;if(!STILL)requestAnimationFrame(blobFrame);
+}
 function drawMap(){
- const cx=600,cy=300,svg=document.getElementById("map");let s="";
+ const cx=720,cy=300,svg=document.getElementById("map");let s="<g id='blobs'></g>";
  const R=m=>m.plan?26:24+Math.sqrt(C.worlds(C.test(m.l)).length)*7;
  const at=l=>MAP.find(m=>m.l===l);
  const curve=(x1,y1,x2,y2)=>`M${x1},${y1} Q${(x1+x2)/2},${y2} ${x2},${y2}`;
@@ -132,12 +150,12 @@ function drawMap(){
  MAP.filter(m=>!m.plan&&m.side).forEach((m,i)=>{const t=C.test(m.l),kw=((C.info(t).kw||{}).patterns||[]).slice(0,3),r=R(m),right=m.side==="right";
   kw.forEach((k,j)=>{const w=k.length*6.6+22,ky=m.y+(j-(kw.length-1)/2)*30,kx0=right?m.x+r+34:m.x-r-34-w,ax=right?kx0:kx0+w;
   s+=`<path class="edge k" d="M${m.x+(right?r:-r)},${m.y} L${ax},${ky}"/><g class="pill float" style="animation-delay:${-(i*3+j)*.7}s"><rect x="${kx0}" y="${ky-11}" width="${w}" height="22" rx="11"/><text x="${kx0+w/2}" y="${ky}">${esc(k)}</text></g>`})});
- s+=`<g class="core"><circle cx="${cx}" cy="${cy}" r="46"/><text x="${cx}" y="${cy-4}">World</text><text x="${cx}" y="${cy+12}" style="font-size:10px;opacity:.7">models</text></g>`;
+ s+=`<g class="core"><circle cx="${cx}" cy="${cy}" r="46"/><text x="${cx}" y="${cy+4}" style="font-size:13px">Genie-3</text></g>`;
  MAP.forEach(m=>{const r=R(m);
   if(m.plan){s+=`<g class="plan"><circle cx="${m.x}" cy="${m.y}" r="${r}" fill="#fff" stroke="var(--green)" stroke-dasharray="3 3"/><text x="${m.x}" y="${m.y+4}" text-anchor="middle" style="font-size:12px;fill:var(--green)">Test ${m.l}</text><text x="${m.x}" y="${m.y+r+18}" text-anchor="middle" style="font-size:12px">${esc(m.name)}</text><text x="${m.x}" y="${m.y+r+33}" text-anchor="middle" style="font-size:11px;fill:var(--soft)">${esc(m.sub)}</text></g>`;return}
   const t=C.test(m.l),n=C.worlds(t).length;
   s+=`<g class="node${t===T?" on":""}" data-t="${t.label}" tabindex="0" role="button" aria-label="Test ${t.label}"><circle cx="${m.x}" cy="${m.y}" r="${r}"/><text class="lab" x="${m.x}" y="${m.y-2}">Test ${t.label}</text><text class="mono" x="${m.x}" y="${m.y+14}" style="font-size:10.5px">${n}/${t.runs}</text><text x="${m.x}" y="${m.y+r+18}" style="font-size:12px">${esc(m.sub||t.name)}</text></g>`});
- svg.innerHTML=s;
+ svg.innerHTML=s;if(STILL)blobFrame(0);else if(!window._blob){window._blob=1;requestAnimationFrame(blobFrame)}
  svg.querySelectorAll(".node").forEach(g=>{const go=()=>{T=C.test(g.dataset.t);history.replaceState(0,"","?t="+T.label);render();document.querySelector("main").scrollIntoView({behavior:"smooth"})};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
 }
 let LB=[],LI=-1;
