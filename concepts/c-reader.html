@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Medium Sized World · Concept C: Reader</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400&display=swap">
+<style>
+:root{--ink:#121212;--soft:#8a8a8a;--line:#e6e6e6;--green:#12a150;--hl:#b9ffcf;--bg:#fff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Instrument Sans",system-ui,sans-serif}
+.mono{font-family:"DM Mono",monospace;font-size:12px}
+mark{background:linear-gradient(transparent 12%,var(--hl) 12%,var(--hl) 88%,transparent 88%);color:inherit;padding:0 .1em}
+.g{color:var(--green)}
+nav.top{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);display:flex;gap:22px;align-items:baseline;padding:12px 40px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+nav.top b{font-weight:600}
+nav.top .tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.top button{all:unset;cursor:pointer;padding:2px 9px;border-radius:999px;font-family:"DM Mono",monospace;font-size:12px}
+nav.top button[aria-current="true"]{background:var(--ink);color:#fff}
+nav.top button:hover{background:var(--hl)}
+nav.top .toc{margin-left:auto;display:flex;gap:14px}
+nav.top .toc a{color:var(--soft);text-decoration:none;font-family:"DM Mono",monospace;font-size:12px}
+nav.top .toc a.on{color:var(--green)}
+.cover{min-height:78vh;display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:60px 40px 40px;align-items:end;border-bottom:1px solid var(--ink)}
+.cover h1{font-weight:500;font-size:clamp(44px,7.5vw,112px);line-height:.9;letter-spacing:-.035em;margin:0}
+.cover .meta{display:grid;gap:16px;align-content:end}
+.cover .meta p{margin:0;max-width:44ch}
+.mosaic{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:22px}
+.mosaic img{width:100%;aspect-ratio:1;object-fit:cover;display:block;opacity:.0;transition:opacity .8s}
+.mosaic img.in{opacity:1}
+.ch{display:grid;grid-template-columns:160px minmax(0,62ch) 1fr;gap:0 40px;padding:70px 40px 30px}
+.ch>.no{font-family:"DM Mono",monospace;color:var(--green);font-size:13px;padding-top:10px}
+.ch>.body h2{font-weight:500;font-size:34px;letter-spacing:-.015em;line-height:1.1;margin:0 0 20px}
+.ch .side{font-size:13px;color:var(--soft);padding-top:12px}
+.ch .side p{margin:0 0 12px;max-width:30ch}
+.ch .side .n{font-size:40px;color:var(--ink);line-height:1;display:block}
+.ch .side .n.g{color:var(--green)}
+.stat{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:24px 20px;margin:24px 0 0}
+.stat div{border-top:1px solid var(--ink);padding-top:8px}
+.stat b{display:block;font-weight:400;font-size:38px;line-height:1.05}
+.stat b.g{color:var(--green)}
+.stat span{font-size:13px;color:#444}
+.lead{font-size:20px;line-height:1.5}
+.pq{font-size:19px;line-height:1.55;border-left:2px solid var(--green);padding-left:18px;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{border-radius:999px;background:var(--hl);padding:1px 10px;font-size:13px}
+.chip.o{background:none;border:1px solid var(--ink)}
+.dl{display:grid;grid-template-columns:110px 1fr;gap:4px 14px;font-size:14px;margin:12px 0}
+.dl dt{color:var(--soft)}.dl dd{margin:0}
+/* worlds: sticky viewer + scrolling entries */
+.wv{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;padding:0 40px}
+.viewer{position:sticky;top:64px;height:calc(100vh - 90px);display:flex;flex-direction:column;justify-content:center}
+.viewer .frame{position:relative;overflow:hidden;aspect-ratio:16/9;background:#f3f3f3}
+.viewer img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s}
+.viewer img.on{opacity:1;animation:pan 14s ease-in-out infinite alternate}
+@keyframes pan{from{transform:scale(1.06) translate(1.5%,0)}to{transform:scale(1.14) translate(-1.5%,-1%)}}
+.viewer .cap{display:flex;justify-content:space-between;gap:14px;margin-top:10px;font-size:13px}
+.viewer .cap .mono{color:var(--green)}
+.viewer svg{width:100%;height:auto;margin-top:16px;overflow:visible}
+.viewer svg text{font-family:"DM Mono",monospace;font-size:10px;fill:var(--soft)}
+.entry{min-height:80vh;padding:12vh 0 4vh;border-bottom:1px solid var(--line)}
+.entry:first-child{padding-top:4vh}
+.entry .k{font-family:"DM Mono",monospace;font-size:12px;color:var(--green)}
+.entry h3{font-weight:500;font-size:26px;letter-spacing:-.01em;margin:4px 0 14px;line-height:1.15}
+.entry .mimg{display:none}
+.entry .bias{margin-top:16px}
+/* glitches timeline */
+.tl{padding:0 40px}
+.tlrow{display:grid;grid-template-columns:160px 1fr;gap:40px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0}
+.tlrow .nm{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlrow svg{width:100%;height:22px;overflow:visible;display:block}
+.tlrow .mk{cursor:pointer}
+.tlrow .mk:hover{stroke:var(--ink);stroke-width:2}
+.tlax{display:grid;grid-template-columns:160px 1fr;gap:40px;font-family:"DM Mono",monospace;font-size:11px;color:var(--soft)}
+.tlax div{display:flex;justify-content:space-between}
+.tip{position:fixed;z-index:20;max-width:320px;background:var(--ink);color:#fff;padding:8px 10px;font-size:13px;pointer-events:none;opacity:0;transition:opacity .12s}
+.tip.on{opacity:1}
+.tip .mono{color:#8dffb4}
+details.more{margin-top:22px}
+details.more>summary{cursor:pointer;list-style:none;font-family:"DM Mono",monospace;font-size:12px;color:var(--green)}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:"+ "}details.more[open]>summary::before{content:"– "}
+.gl{display:grid;grid-template-columns:36px 100px 1fr;gap:12px;font-size:14px;padding:6px 0;border-bottom:1px solid var(--line)}
+.body p{margin:0 0 16px}
+.notes{white-space:pre-wrap}
+footer{padding:80px 40px 120px;color:var(--soft);font-size:13px}
+.concept{position:fixed;right:14px;bottom:14px;background:var(--ink);color:#fff;padding:6px 10px;font-size:12px;z-index:30}
+.concept a{color:#8dffb4}
+@media (max-width:900px){nav.top{padding:10px 16px}nav.top .toc{display:none}.cover{grid-template-columns:1fr;padding:40px 16px 30px;min-height:auto}.ch{grid-template-columns:1fr;padding:50px 16px 20px}.ch .side{padding-top:20px}.wv{grid-template-columns:1fr;padding:0 16px}.viewer{display:none}.entry{min-height:auto;padding:30px 0}.entry .mimg{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;margin-bottom:12px}.tl{padding:0 16px}.tlrow,.tlax{grid-template-columns:90px 1fr;gap:12px}footer{padding:60px 16px 100px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.viewer img.on{animation:none}.mosaic img{transition:none;opacity:1}}
+</style></head><body>
+<nav class="top"><b>Medium Sized World</b><span class="tabs" id="tabs"></span>
+ <span class="toc" id="toc"><a href="#c1">01 Overview</a><a href="#c2">02 Prompts</a><a href="#c3">03 Worlds</a><a href="#c4">04 Glitches</a><a href="#c5">05 Patterns</a><a href="#c6">06 Analysis</a></span></nav>
+<section class="cover" id="c1">
+ <div><p class="mono g" id="kicker"></p><h1 id="title"></h1></div>
+ <div class="meta"><p class="lead" id="about"></p><div class="mosaic" id="mosaic"></div></div>
+</section>
+<section class="ch"><div class="no">01 / Overview</div><div class="body"><h2>What the model did</h2><div class="stat" id="stats"></div></div>
+ <aside class="side" id="side1"></aside></section>
+<section class="ch" id="c2"><div class="no">02 / Prompts</div><div class="body"><h2>World prompt</h2><p class="pq" id="prompt"></p><h2 style="margin-top:44px">Character prompt</h2><p id="charp"></p></div>
+ <aside class="side"><p>Each run uses the same prompt, locked. Highlighted words are the parts the model most often ignored or rewrote.</p></aside></section>
+<section class="ch" id="c3" style="padding-bottom:10px"><div class="no">03 / Worlds</div><div class="body"><h2>Worlds bias log</h2><p class="g">Place, protagonist, prompt adherence. Scroll; the image on the left follows the entry you are reading.</p></div><aside></aside></section>
+<div class="wv"><div class="viewer"><div class="frame" id="frame"></div><div class="cap"><span id="vcap"></span><span class="mono" id="vnum"></span></div><svg id="vtl" viewBox="0 0 600 40"></svg></div><div id="entries"></div></div>
+<section class="ch" id="c4"><div class="no">04 / Glitches</div><div class="body"><h2>Glitch log</h2><p>Every glitch, placed on the 60 second run it happened in. Hover a mark to read it.</p><div class="chips" id="kwg"></div></div><aside class="side" id="side4"></aside></section>
+<div class="tl"><div id="tl"></div><div class="tlax"><span></span><div><span>0:00</span><span>0:15</span><span>0:30</span><span>0:45</span><span>1:00</span></div></div>
+ <details class="more"><summary>Read the full log as text</summary><div id="gl"></div></details></div>
+<section class="ch" id="c5"><div class="no">05 / Patterns</div><div class="body"><h2>Patterns</h2><div class="chips" id="kwp"></div><details class="more" open><summary>Notes</summary><div class="notes" id="pat"></div></details></div><aside></aside></section>
+<section class="ch" id="c6"><div class="no">06 / Analysis</div><div class="body"><h2>Analysis</h2><div class="chips" id="kwa"></div><div id="ana" style="margin-top:20px"></div></div><aside></aside></section>
+<footer>Medium Sized World. A research project by Alice Bucknell on bias in generative world models.</footer>
+<div class="tip" id="tip"></div>
+<div class="concept">Concept C · Reader · <a href="index.html">all concepts</a></div>
+<script src="data.js"></script><script src="common.js"></script>
+<script>
+const {esc,pad}=C;let T=C.test(new URLSearchParams(location.search).get("t")||"1A");let KW=[];
+const hl=s=>{let h=esc(s);KW.forEach(k=>{if(k.length<3)return;h=h.replace(new RegExp("\\b("+k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")\\b","gi"),"<mark>$1</mark>")});return h};
+const tip=document.getElementById("tip");
+function showTip(e,html){tip.innerHTML=html;tip.style.left=Math.min(e.clientX+14,innerWidth-340)+"px";tip.style.top=(e.clientY+14)+"px";tip.classList.add("on")}
+function marks(g,y,h){const W=600;return C.spans(g.time).map(([a,b])=>{const x=a/60*W,w=Math.max((b-a)/60*W,0);return w>2?`<rect class="mk" x="${x}" y="${y}" width="${w}" height="${h}" rx="${h/2}" fill="var(--green)" fill-opacity=".35" data-g="${g.id}"/>`:`<circle class="mk" cx="${x}" cy="${y+h/2}" r="${h/2+1}" fill="var(--green)" data-g="${g.id}"/>`}).join("")}
+function render(){
+ const I=C.info(T),S=C.stats(T),ws=C.worlds(T),gs=C.glitches(T);const kw=I.kw||{};KW=[].concat(kw.glitches||[],kw.patterns||[],kw.analysis||[]);
+ document.title="Medium Sized World · Test "+T.label;
+ tabs.innerHTML=C.TESTS.map(t=>`<button aria-current="${t===T}" data-t="${t.label}" title="${esc(t.name)}">Test ${t.label}</button>`).join("");
+ tabs.querySelectorAll("button").forEach(b=>b.onclick=()=>{T=C.test(b.dataset.t);history.replaceState(0,"","?t="+T.label);render();scrollTo(0,0)});
+ kicker.textContent=`Test ${T.label} · ${S.worlds} of ${S.runs} worlds`;title.textContent=I.title||T.name;about.textContent=I.about||"";
+ mosaic.innerHTML=ws.filter(w=>w.hero).slice(0,12).map((w,i)=>`<img src="${esc(w.hero)}" alt="" style="transition-delay:${i*90}ms">`).join("");
+ requestAnimationFrame(()=>setTimeout(()=>mosaic.querySelectorAll("img").forEach(i=>i.classList.add("in")),60));
+ const st=[];const add=(n,l,g)=>st.push(`<div><b class="${g?"g":""}">${n}</b><span>${l}</span></div>`);
+ if(S.people){add(S.white,"white main characters",1);add(S.men,"male main characters",1);add(S.wash,"whitewashed worlds",1);add(S.nw,"non-Western cities");add(S.legible,"legible language")}
+ if(S.worlds){add(S.hall,"hallucinations (unprompted)",1);add(S.glitches,"glitches")}add(S.failed,"prompts refused or failed");if(S.adherence!=null)add(S.adherence+"%","prompt adherence");
+ stats.innerHTML=st.join("");
+ const loc=C.tally(ws,"arch"),ht=C.hallTypes(ws);
+ side1.innerHTML=(loc.length?`<p class="mono">CITY LOCATION</p><div class="chips" style="margin-bottom:22px">${loc.slice(0,8).map(([k,n])=>`<span class="chip o">${esc(k)} ${n}</span>`).join("")}</div>`:"")+(Object.keys(ht).length?`<p class="mono">HALLUCINATIONS</p><div class="chips">${Object.entries(ht).map(([t,o])=>`<span class="chip" title="${esc(Object.keys(o).join(", "))}">${t} ${Object.values(o).reduce((a,b)=>a+b,0)}</span>`).join("")}</div>`:"");
+ document.getElementById("prompt").innerHTML=hl(I.prompt||"Prompt not written yet.");charp.textContent=I.settings||"Not set.";
+ const F=T.num===2?[["layout","Row"],["firstPass","First half"],["returnPass","Second half"],["camera","Camera"]]:[["caretaker","Caretaker"],["founder","Founder"],["city","City"],["garden","Garden"],["creature","Creature"]];
+ frame.innerHTML=ws.map((w,i)=>w.hero?`<img src="${esc(w.hero)}" data-i="${i}" alt="Hero image, world ${w.num}"${i?"":" class='on'"}>`:"").join("");
+ entries.innerHTML=ws.length?ws.map((w,i)=>`<article class="entry" data-i="${i}">${w.hero?`<img class="mimg" src="${esc(w.hero)}" alt="" loading="lazy">`:""}<div class="k">World ${pad(w.num)} · ${gs.filter(g=>g.world===w.num).length} glitches</div><h3>${esc(w.name)}</h3><p>${hl(w.description||"")}</p><dl class="dl">${F.filter(([f])=>w[f]).map(([f,l])=>`<dt>${l}</dt><dd>${hl(w[f])}</dd>`).join("")}</dl>${w.bias?`<p class="bias"><mark>${esc(w.bias)}</mark></p>`:""}${(w.hallucinations||[]).length?`<div class="chips">${w.hallucinations.map(h=>`<span class="chip o">${esc(h)}</span>`).join("")}</div>`:""}</article>`).join(""):`<p class="mono" style="padding:30px 0">No worlds logged for this test yet.</p>`;
+ const setV=i=>{const w=ws[i];if(!w)return;frame.querySelectorAll("img").forEach(im=>im.classList.toggle("on",+im.dataset.i===i));vcap.textContent=w.name;vnum.textContent="World "+pad(w.num);
+  const g=gs.filter(g=>g.world===w.num);vtl.innerHTML=`<line x1="0" x2="600" y1="14" y2="14" stroke="var(--ink)" stroke-width=".6"/>${[0,15,30,45,60].map(s=>`<text x="${s*10}" y="36" text-anchor="${s?s===60?"end":"middle":"start"}">${s?(s===60?"1:00":"0:"+s):"0:00"}</text>`).join("")}${g.map(x=>marks(x,8,12)).join("")}`;bindMarks(vtl,gs)};
+ setV(0);
+ if(window._io)_io.disconnect();
+ window._io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)setV(+e.target.dataset.i)}),{rootMargin:"-45% 0px -45% 0px"});
+ entries.querySelectorAll(".entry").forEach(el=>_io.observe(el));
+ const k=a=>(a||[]).map(x=>`<span class="chip">${esc(x)}</span>`).join("");kwg.innerHTML=k(kw.glitches);kwp.innerHTML=k(kw.patterns);kwa.innerHTML=k(kw.analysis);
+ const types={};gs.forEach(g=>types[g.type]=(types[g.type]||0)+1);
+ side4.innerHTML=`<span class="n g">${gs.length}</span><p>glitches across ${ws.length} worlds</p>${Object.entries(types).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`<p style="margin:0">${esc(t)} <span class="mono">${n}</span></p>`).join("")}`;
+ tl.innerHTML=ws.map(w=>`<div class="tlrow"><span class="nm"><span class="mono g">${pad(w.num)}</span> ${esc(w.name)}</span><svg viewBox="0 0 600 22" preserveAspectRatio="none"><line x1="0" x2="600" y1="11" y2="11" stroke="var(--line)"/>${gs.filter(g=>g.world===w.num).map(g=>marks(g,5,12)).join("")}</svg></div>`).join("");
+ bindMarks(tl,gs);
+ gl.innerHTML=gs.map(g=>`<div class="gl"><span class="mono">${g.world?pad(g.world):"—"}</span><span class="mono">${esc(g.time)}</span><span><span class="g">${esc(g.type)}</span> ${esc(g.desc)}</span></div>`).join("");
+ pat.innerHTML=I.patterns?hl(I.patterns):"Patterns appear once a few worlds are logged.";
+ ana.innerHTML=I.judgement?C.numbered(I.judgement).map(p=>`<p>${hl(p)}</p>`).join(""):"<p class='mono'>Analysis comes later.</p>";
+}
+function bindMarks(root,gs){root.querySelectorAll(".mk").forEach(m=>{const g=gs.find(x=>x.id===m.dataset.g);m.onmousemove=e=>showTip(e,`<span class="mono">W${pad(g.world)} · ${esc(g.time)} · ${esc(g.type)}</span><br>${esc(g.desc)}`);m.onmouseleave=()=>tip.classList.remove("on")})}
+const secIo=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)toc.querySelectorAll("a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+e.target.id))}),{rootMargin:"-40% 0px -55% 0px"});
+["c1","c2","c3","c4","c5","c6"].forEach(id=>secIo.observe(document.getElementById(id)));
+render();
+</script></body></html>

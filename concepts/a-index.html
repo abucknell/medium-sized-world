@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Medium Sized World · Concept A: Index</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--ink:#111;--soft:#6b6b6b;--line:#e4e4e4;--green:#0a9e3f;--hl:#d9ffe4;--bg:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "Hanken Grotesk",system-ui,sans-serif}
+a{color:inherit}
+.mono{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.01em}
+.g{color:var(--green)}
+.wrap{display:grid;grid-template-columns:minmax(260px,340px) 1fr;min-height:100vh}
+aside{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 28px 40px;border-right:1px solid var(--line)}
+main{padding:28px 40px 120px;min-width:0}
+h1{font-weight:500;font-size:22px;line-height:1.15;margin:0 0 4px}
+.sub{color:var(--soft);margin:0 0 28px}
+.tests{list-style:none;margin:0 0 28px;padding:0;border-top:1px solid var(--ink)}
+.tests li{border-bottom:1px solid var(--line)}
+.tests button{all:unset;cursor:pointer;display:grid;grid-template-columns:34px 1fr auto;gap:8px;width:100%;padding:8px 0}
+.tests button:hover .tn{text-decoration:underline}
+.tests button[aria-current="true"]{color:var(--green)}
+.tests .cnt{color:var(--soft)}
+.about{margin:0 0 22px}
+.sentence{font-size:15px;line-height:1.6;margin:0 0 22px}
+.sentence b{font-weight:500;color:var(--green)}
+.legend{color:var(--soft)}
+h2{font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin:0;padding:10px 0;border-bottom:1px solid var(--ink);display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+h2 .mono{text-transform:none;letter-spacing:0;color:var(--soft);font-weight:400}
+section{margin:0 0 64px}
+.row{display:grid;grid-template-columns:52px minmax(0,1.3fr) minmax(0,2fr) 90px;gap:16px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer;align-items:baseline}
+.row:hover{background:linear-gradient(90deg,var(--hl),transparent 70%)}
+.row .t{font-weight:500}
+.tags{display:flex;flex-wrap:wrap;gap:4px 10px}
+.tag{color:var(--green)}
+.tag::before{content:"↳ ";color:var(--soft)}
+.detail{display:none;padding:14px 0 26px 68px;border-bottom:1px solid var(--line)}
+.detail.on{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:28px}
+.detail img{width:100%;display:block}
+.cap{color:var(--soft);font-size:13px;margin-top:6px}
+dl{margin:0;display:grid;grid-template-columns:110px 1fr;gap:6px 14px}
+dt{color:var(--soft)} dd{margin:0}
+.float{position:fixed;pointer-events:none;width:320px;z-index:5;opacity:0;transition:opacity .15s;box-shadow:0 0 0 1px var(--ink)}
+.float.on{opacity:1}
+.float img{display:block;width:100%}
+.prompt{max-width:70ch;font-size:17px;line-height:1.55;margin:16px 0 0}
+.prompt mark{background:var(--hl);color:inherit}
+.char{color:var(--soft);margin-top:10px}
+.bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px 34px;margin-top:16px}
+.bar h3{font-weight:500;font-size:13px;margin:0 0 6px}
+.br{display:grid;grid-template-columns:1fr 34px;gap:8px;font-size:13px;padding:2px 0;border-bottom:1px dotted var(--line)}
+.br i{display:block;height:2px;background:var(--ink);margin-top:4px}
+.br .n{text-align:right}
+.gl{display:grid;grid-template-columns:52px 120px 100px 1fr;gap:16px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.notes{max-width:72ch;white-space:pre-wrap;margin-top:16px}
+.ana p{max-width:72ch;margin:16px 0}
+.ana p::first-line{font-weight:500}
+details>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+details>summary h2::after{content:"+";margin-left:auto;font-weight:400}
+details[open]>summary h2::after{content:"–"}
+.kw{color:var(--green);font-size:13px;letter-spacing:0;text-transform:none;font-weight:400}
+.kw::before{content:"● ";font-size:9px;vertical-align:2px}
+.concept{position:fixed;right:14px;bottom:14px;background:var(--ink);color:#fff;padding:6px 10px;font-size:12px;z-index:9}
+.concept a{color:#9fffbf}
+@media (max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}main{padding:24px 16px 100px}.row{grid-template-columns:40px 1fr;}.row .tags,.row .tm{grid-column:2}.detail.on{grid-template-columns:1fr;padding-left:0}.gl{grid-template-columns:40px 1fr}.float{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="wrap">
+<aside>
+  <h1>Medium Sized World</h1>
+  <p class="sub">An index of bias in Google Project Genie world models</p>
+  <ul class="tests" id="tests"></ul>
+  <p class="about" id="about"></p>
+  <p class="sentence" id="sentence"></p>
+  <p class="mono legend">Hover a world to see its hero image. Click to open the record.</p>
+</aside>
+<main>
+  <section>
+    <h2>World prompt <span class="mono" id="charp"></span></h2>
+    <p class="prompt" id="prompt"></p>
+  </section>
+  <section>
+    <h2>Worlds bias log <span class="mono">place · protagonist · prompt adherence</span></h2>
+    <div id="rows"></div>
+  </section>
+  <section>
+    <h2>Counts</h2>
+    <div class="bars" id="bars"></div>
+  </section>
+  <details><summary><h2>Glitch log <span id="kwg"></span></h2></summary><div id="gl"></div></details>
+  <section></section>
+  <details><summary><h2>Patterns <span id="kwp"></span></h2></summary><div class="notes" id="pat"></div></details>
+  <section></section>
+  <details><summary><h2>Analysis <span id="kwa"></span></h2></summary><div class="ana" id="ana"></div></details>
+</main>
+</div>
+<div class="float" id="float"><img alt=""></div>
+<div class="concept">Concept A · Index · <a href="index.html">all concepts</a></div>
+<script src="data.js"></script><script src="common.js"></script>
+<script>
+const {esc,pad}=C; let T=C.test(new URLSearchParams(location.search).get("t")||"1A");
+const fl=document.getElementById("float"),fi=fl.querySelector("img");
+document.addEventListener("mousemove",e=>{fl.style.left=Math.min(e.clientX+24,innerWidth-340)+"px";fl.style.top=Math.min(e.clientY+16,innerHeight-200)+"px"});
+function render(){
+ const I=C.info(T),S=C.stats(T),ws=C.worlds(T),gs=C.glitches(T);
+ document.getElementById("tests").innerHTML=C.TESTS.map(t=>`<li><button aria-current="${t===T}" data-t="${t.label}"><span class="mono">${t.label}</span><span class="tn">${esc(t.name)}</span><span class="mono cnt">${C.worlds(t).length}/${t.runs}</span></button></li>`).join("");
+ document.querySelectorAll("#tests button").forEach(b=>b.onclick=()=>{T=C.test(b.dataset.t);history.replaceState(0,"","?t="+T.label);render();scrollTo(0,0)});
+ document.getElementById("about").textContent=I.about||"";
+ const parts=[`<b>${S.worlds}</b> of ${S.runs} worlds logged, with <b>${S.glitches}</b> glitches.`];
+ if(S.people)parts.push(`Of ${S.people} main characters, <b>${S.white}</b> were white and <b>${S.men}</b> were men.`);
+ if(S.worlds)parts.push(`The model added <b>${S.hall}</b> unprompted things across ${S.hallWorlds} worlds.`);
+ if(S.people)parts.push(`<b>${S.nw}</b> worlds showed a non-Western city; <b>${S.wash}</b> were whitewashed between preview and world.`);
+ if(S.adherence!=null)parts.push(`It followed <b>${S.adherence}%</b> of the prompt checklist.`);
+ parts.push(`<b>${S.failed}</b> prompts were refused or failed.`);
+ document.getElementById("sentence").innerHTML=parts.join(" ");
+ document.getElementById("prompt").innerHTML=esc(I.prompt||"Prompt not written yet.");
+ document.getElementById("charp").textContent=I.settings?"Character: "+I.settings:"";
+ const kw=I.kw||{};const k=a=>(a||[]).map(x=>`<span class="kw">${esc(x)}</span>`).join("");
+ kwg.innerHTML=k(kw.glitches);kwp.innerHTML=k(kw.patterns);kwa.innerHTML=k(kw.analysis);
+ const F=T.num===2?[["layout","Row"],["firstPass","First half"],["returnPass","Second half"],["camera","Camera"]]:[["caretaker","Caretaker"],["founder","Founder"],["city","City"],["garden","Garden"],["creature","Creature"],["books","Books"],["message","Message"]];
+ document.getElementById("rows").innerHTML=ws.length?ws.map(w=>`<div class="row" data-id="${w.id}" data-img="${esc(w.hero||"")}"><span class="mono">${pad(w.num)}</span><span class="t">${esc(w.name)}</span><span class="tags">${(w.hallucinations||[]).concat(w.nonWestern||[]).slice(0,4).map(x=>`<span class="tag">${esc(x.replace(/\s*\(.*\)/,""))}</span>`).join("")}</span><span class="mono tm">${gs.filter(g=>g.world===w.num).length} glitches</span></div>
+ <div class="detail" id="d-${w.id}"><div>${w.hero?`<img src="${esc(w.hero)}" alt="Hero image, world ${w.num}" loading="lazy">`:""}<div class="cap">${esc(w.heroNote||"")}</div></div>
+ <div><p style="margin-top:0">${esc(w.description||"")}</p><dl>${F.filter(([f])=>w[f]).map(([f,l])=>`<dt>${l}</dt><dd>${esc(w[f])}</dd>`).join("")}${w.bias?`<dt class="g">Bias</dt><dd>${esc(w.bias)}</dd>`:""}</dl></div></div>`).join(""):`<p class="mono legend" style="padding:12px 0">No worlds logged for this test yet.</p>`;
+ document.querySelectorAll(".row").forEach(r=>{
+  r.onmouseenter=()=>{if(r.dataset.img){fi.src=r.dataset.img;fl.classList.add("on")}};r.onmouseleave=()=>fl.classList.remove("on");
+  r.onclick=()=>{document.getElementById("d-"+r.dataset.id).classList.toggle("on");fl.classList.remove("on")}});
+ const bar=(t,rows,tot)=>rows.length?`<div class="bar"><h3>${t}</h3>${rows.slice(0,8).map(([k,n])=>`<div class="br"><span>${esc(k)}<i style="width:${Math.round(n/Math.max(tot,1)*100)}%"></i></span><span class="n mono">${n}</span></div>`).join("")}</div>`:"";
+ const ht=C.hallTypes(ws);
+ document.getElementById("bars").innerHTML=bar("Caretaker · race",C.cast(ws,"caretaker","race"),ws.length)+bar("Founder · race",C.cast(ws,"founder","race"),ws.length)+bar("City location",C.tally(ws,"arch"),ws.length)+bar("Non-Western places",C.tally(ws,"nonWestern"),ws.length)+
+  (Object.keys(ht).length?`<div class="bar"><h3>Hallucinations</h3>${Object.entries(ht).map(([t,o])=>`<div class="br"><span>${t}: <span class="g">${Object.keys(o).map(esc).join(", ")}</span></span><span class="n mono">${Object.values(o).reduce((a,b)=>a+b,0)}</span></div>`).join("")}</div>`:"");
+ document.getElementById("gl").innerHTML=gs.map(g=>`<div class="gl"><span class="mono">${g.world?pad(g.world):"—"}</span><span class="mono">${esc(g.time)}</span><span class="g">${esc(g.type)}</span><span>${esc(g.desc)}</span></div>`).join("");
+ document.getElementById("pat").textContent=I.patterns||"Patterns appear once a few worlds are logged.";
+ document.getElementById("ana").innerHTML=I.judgement?C.numbered(I.judgement).map(p=>`<p>${esc(p)}</p>`).join(""):"<p class='legend'>Analysis comes later.</p>";
+}
+render();
+</script></body></html>

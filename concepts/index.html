@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Medium Sized World · Design concepts</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=IBM+Plex+Mono&display=swap">
+<style>
+:root{--ink:#111;--soft:#707070;--line:#e4e4e4;--green:#0a9e3f;--hl:#d9ffe4}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font:400 16px/1.5 "Hanken Grotesk",system-ui,sans-serif}
+main{max-width:1240px;margin:0 auto;padding:48px 40px 100px}
+.mono{font-family:"IBM Plex Mono",monospace;font-size:12px}
+h1{font-weight:500;font-size:clamp(30px,4vw,48px);line-height:1.05;margin:0 0 10px;letter-spacing:-.015em}
+.intro{max-width:62ch;color:#333;margin:0 0 48px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:36px}
+a.card{color:inherit;text-decoration:none;display:block}
+.shot{position:relative;border:1px solid var(--ink);aspect-ratio:16/10;overflow:hidden;background:#f4f4f4}
+.shot img.d{width:100%;display:block;transition:transform 8s ease-out}
+a.card:hover .shot img.d{transform:translateY(-38%)}
+.shot img.m{position:absolute;right:10px;bottom:10px;width:24%;border:1px solid var(--ink);background:#fff}
+.k{color:var(--green);margin:16px 0 2px;display:block}
+h2{font-weight:500;font-size:22px;margin:0 0 8px}
+a.card:hover h2{text-decoration:underline;text-decoration-color:var(--green)}
+p{margin:0 0 10px}
+ul{margin:0;padding:0;list-style:none;font-size:14px}
+li{padding:5px 0;border-top:1px solid var(--line)}
+li::before{content:"● ";color:var(--green);font-size:9px;vertical-align:2px}
+.ref{color:var(--soft);font-size:14px}
+.note{margin-top:56px;border-top:1px solid var(--ink);padding-top:14px;max-width:70ch;color:#333}
+@media (max-width:900px){main{padding:28px 16px 80px}.grid{grid-template-columns:1fr;gap:44px}}
+@media (prefers-reduced-motion:reduce){.shot img.d{transition:none}}
+</style></head><body><main>
+<p class="mono" style="color:var(--green);margin:0 0 12px">Medium Sized World · design previz</p>
+<h1>Three directions for the website</h1>
+<p class="intro">Each concept is a working page built from the same live data as the current site (all tests, worlds, glitches, patterns and analysis), so you can click through it properly. Nothing here changes the main site. Pick one, or mix parts.</p>
+<div class="grid">
+ <a class="card" href="a-index.html">
+  <div class="shot"><img class="d" src="shots/a-d.jpg" alt="Concept A desktop"><img class="m" src="shots/a-m.jpg" alt="Concept A phone"></div>
+  <span class="k mono">A</span><h2>Index</h2>
+  <p>A quiet catalogue. A sticky side panel holds the tests and the stats written as one sentence; worlds are a long list of rows.</p>
+  <ul><li>Hover a world and its hero image follows your cursor</li><li>Click a row to open the full record</li><li>Thin line counts, mono labels, lots of white</li></ul>
+  <p class="ref" style="margin-top:10px">Closest to the Cyberfeminism Index.</p>
+ </a>
+ <a class="card" href="b-ecosystem.html">
+  <div class="shot"><img class="d" src="shots/b-d.jpg" alt="Concept B desktop"><img class="m" src="shots/b-m.jpg" alt="Concept B phone"></div>
+  <span class="k mono">B</span><h2>Ecosystem</h2>
+  <p>The project as a system map. The six tests orbit Genie, sized by how many worlds are logged, with key findings floating off each one.</p>
+  <ul><li>A slow moving film strip of every hero image</li><li>Stats as filled circles; sections framed in outline shapes</li><li>World cards pan on hover and open large on click</li></ul>
+  <p class="ref" style="margin-top:10px">Closest to Serpentine Future Art Ecosystems.</p>
+ </a>
+ <a class="card" href="c-reader.html">
+  <div class="shot"><img class="d" src="shots/c-d.jpg" alt="Concept C desktop"><img class="m" src="shots/c-m.jpg" alt="Concept C phone"></div>
+  <span class="k mono">C</span><h2>Reader</h2>
+  <p>An editorial reader in six numbered chapters, with big type, side notes and green highlighter on the key phrases.</p>
+  <ul><li>The hero image stays pinned and swaps as you scroll through worlds</li><li>Glitches drawn on a 0 to 60 second timeline per world</li><li>Chapter menu tracks where you are</li></ul>
+  <p class="ref" style="margin-top:10px">Closest to the FAE reader PDFs and gunseli.xyz.</p>
+ </a>
+</div>
+<p class="note">Every concept has the same test switcher, so try Test 1B and Test 2 as well. They all use a white page, black sans serif text and one green, work on a phone, and calm their motion if your device asks for reduced motion.</p>
+</main></body></html>
