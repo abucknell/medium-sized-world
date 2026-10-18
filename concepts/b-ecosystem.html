@@ -18,6 +18,7 @@ header p{max-width:36ch;margin:6px 0 0;color:var(--soft)}
 .map .node{cursor:pointer}
 .map .node circle{fill:#fff;stroke:var(--ink);stroke-width:1;transition:fill .2s}
 .map .node:hover circle,.map .node.on circle{fill:var(--hl);stroke:var(--green)}
+.map .node text,.map .plan text{paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
 .map .node text{font-size:13px;text-anchor:middle;pointer-events:none}
 .map .node .lab{font-weight:500}
 .map .pill rect{fill:#fff;stroke:var(--green)}
@@ -95,7 +96,7 @@ details.frame[open]>summary::after{background:linear-gradient(var(--ink),var(--i
   <h1>Medium<br>Sized<br>World</h1>
   <p>A research system for testing bias, glitch, semantic drift, reality gaps and collapse in emerging world models. Models featured in the experiment include Genie-3, Marble, and PAN.</p>
 </header>
-<div class="map"><svg id="map" viewBox="0 0 1200 520" role="img" aria-label="Map of the six tests"></svg></div>
+<div class="map"><svg id="map" viewBox="0 0 1200 560" role="img" aria-label="Map of the six tests"></svg></div>
 <div class="strip" id="strip"><div class="track" id="track"></div></div>
 <main>
   <div class="testhead"><span class="num mono" id="tnum"></span><h2 id="tname"></h2><span class="mono" id="tcount"></span></div>
@@ -115,16 +116,27 @@ details.frame[open]>summary::after{background:linear-gradient(var(--ink),var(--i
 <script>
 const {esc,pad}=C;let T=C.test(new URLSearchParams(location.search).get("t")||"1A");
 const NS="http://www.w3.org/2000/svg";
+// Hand-placed map. A sub-test springs out of its parent instead of out of Genie.
+const MAP=[
+ {l:"1A",x:380,y:150,side:"left"},
+ {l:"1B",x:190,y:320,from:"1A",side:"right"},
+ {l:"2",x:830,y:150,side:"right",sub:"Object Permanence: real-world objects"},
+ {plan:true,l:"2B",x:1050,y:330,from:"2",name:"Invented agents",sub:"Overworld story world · planned"},
+ {l:"3",x:900,y:455},{l:"4",x:600,y:490},{l:"5",x:330,y:470}];
 function drawMap(){
- const W=1200,H=520,cx=600,cy=270,svg=document.getElementById("map");let s="";
- const pos=C.TESTS.map((t,i)=>{const a=-Math.PI/2+i*(2*Math.PI/C.TESTS.length)+.3;return{t,x:cx+Math.cos(a)*400,y:cy+Math.sin(a)*190}});
- pos.forEach(p=>{s+=`<path class="edge" d="M${cx},${cy} Q${(cx+p.x)/2},${p.y} ${p.x},${p.y}"/>`});
- pos.forEach((p,i)=>{const kw=((C.info(p.t).kw||{}).patterns||[]).slice(0,3);const r=24+Math.sqrt(C.worlds(p.t).length)*7,right=p.x>=cx;
-  kw.forEach((k,j)=>{const w=k.length*6.6+22,ky=p.y+(j-(kw.length-1)/2)*30,kx0=right?p.x+r+34:p.x-r-34-w;const ax=right?kx0:kx0+w;
-  s+=`<path class="edge k" d="M${p.x+(right?r:-r)},${p.y} L${ax},${ky}"/><g class="pill float" style="animation-delay:${-(i*3+j)*.7}s"><rect x="${kx0}" y="${ky-11}" width="${w}" height="22" rx="11"/><text x="${kx0+w/2}" y="${ky}">${esc(k)}</text></g>`})});
- s+=`<g class="core"><circle cx="${cx}" cy="${cy}" r="46"/><text x="${cx}" y="${cy-4}">Genie</text><text x="${cx}" y="${cy+12}" style="font-size:10px;opacity:.7">world model</text></g>`;
- pos.forEach(p=>{const n=C.worlds(p.t).length,r=24+Math.sqrt(n)*7;
-  s+=`<g class="node${p.t===T?" on":""}" data-t="${p.t.label}" tabindex="0" role="button" aria-label="Test ${p.t.label}"><circle cx="${p.x}" cy="${p.y}" r="${r}"/><text class="lab" x="${p.x}" y="${p.y-2}">Test ${p.t.label}</text><text class="mono" x="${p.x}" y="${p.y+14}" style="font-size:10.5px">${n}/${p.t.runs}</text><text x="${p.x}" y="${p.y+r+18}" style="font-size:12px">${esc(p.t.name)}</text></g>`});
+ const cx=600,cy=300,svg=document.getElementById("map");let s="";
+ const R=m=>m.plan?26:24+Math.sqrt(C.worlds(C.test(m.l)).length)*7;
+ const at=l=>MAP.find(m=>m.l===l);
+ const curve=(x1,y1,x2,y2)=>`M${x1},${y1} Q${(x1+x2)/2},${y2} ${x2},${y2}`;
+ MAP.forEach(m=>{const f=m.from?at(m.from):{x:cx,y:cy};s+=`<path class="edge${m.plan?" k":""}" d="${curve(f.x,f.y,m.x,m.y)}"/>`});
+ MAP.filter(m=>!m.plan&&m.side).forEach((m,i)=>{const t=C.test(m.l),kw=((C.info(t).kw||{}).patterns||[]).slice(0,3),r=R(m),right=m.side==="right";
+  kw.forEach((k,j)=>{const w=k.length*6.6+22,ky=m.y+(j-(kw.length-1)/2)*30,kx0=right?m.x+r+34:m.x-r-34-w,ax=right?kx0:kx0+w;
+  s+=`<path class="edge k" d="M${m.x+(right?r:-r)},${m.y} L${ax},${ky}"/><g class="pill float" style="animation-delay:${-(i*3+j)*.7}s"><rect x="${kx0}" y="${ky-11}" width="${w}" height="22" rx="11"/><text x="${kx0+w/2}" y="${ky}">${esc(k)}</text></g>`})});
+ s+=`<g class="core"><circle cx="${cx}" cy="${cy}" r="46"/><text x="${cx}" y="${cy-4}">World</text><text x="${cx}" y="${cy+12}" style="font-size:10px;opacity:.7">models</text></g>`;
+ MAP.forEach(m=>{const r=R(m);
+  if(m.plan){s+=`<g class="plan"><circle cx="${m.x}" cy="${m.y}" r="${r}" fill="#fff" stroke="var(--green)" stroke-dasharray="3 3"/><text x="${m.x}" y="${m.y+4}" text-anchor="middle" style="font-size:12px;fill:var(--green)">Test ${m.l}</text><text x="${m.x}" y="${m.y+r+18}" text-anchor="middle" style="font-size:12px">${esc(m.name)}</text><text x="${m.x}" y="${m.y+r+33}" text-anchor="middle" style="font-size:11px;fill:var(--soft)">${esc(m.sub)}</text></g>`;return}
+  const t=C.test(m.l),n=C.worlds(t).length;
+  s+=`<g class="node${t===T?" on":""}" data-t="${t.label}" tabindex="0" role="button" aria-label="Test ${t.label}"><circle cx="${m.x}" cy="${m.y}" r="${r}"/><text class="lab" x="${m.x}" y="${m.y-2}">Test ${t.label}</text><text class="mono" x="${m.x}" y="${m.y+14}" style="font-size:10.5px">${n}/${t.runs}</text><text x="${m.x}" y="${m.y+r+18}" style="font-size:12px">${esc(m.sub||t.name)}</text></g>`});
  svg.innerHTML=s;
  svg.querySelectorAll(".node").forEach(g=>{const go=()=>{T=C.test(g.dataset.t);history.replaceState(0,"","?t="+T.label);render();document.querySelector("main").scrollIntoView({behavior:"smooth"})};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
 }
