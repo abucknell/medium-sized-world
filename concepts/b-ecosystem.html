@@ -94,6 +94,7 @@ details.frame[open]>summary::after{background:linear-gradient(var(--ink),var(--i
 .imw .prev{left:-78px}.imw .next{right:-78px}
 .find{position:fixed;left:50%;bottom:14px;transform:translate(-50%,140%);transition:transform .25s;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--green);border-radius:999px;padding:4px 8px 4px 16px;z-index:25;box-shadow:0 6px 30px rgba(0,0,0,.08);max-width:calc(100% - 32px)}
 .find.on{transform:translate(-50%,0)}
+.find:not(.on){visibility:hidden;opacity:0}
 .find b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .find .n{color:var(--soft);white-space:nowrap}
 .find .wa,.find .wa svg{width:44px;height:30px}
@@ -113,7 +114,7 @@ mark.hit.cur{box-shadow:0 0 0 2px var(--green)}
 </style></head><body>
 <header>
   <h1>Medium<br>Sized<br>World</h1>
-  <p>A research system for testing bias, glitch, semantic drift, reality gaps and collapse in emerging world models. Models featured in the experiment include Genie-3, Marble, and PAN.</p>
+  <p>A research system for testing bias, glitch, semantic drift, reality gaps and model collapse in emerging world models. Models featured in the experiment include Genie-3, Marble, and PAN.</p>
 </header>
 <div class="map"><svg id="map" viewBox="0 0 1440 620" role="img" aria-label="Map of the world models and their tests"></svg></div>
 <div class="strip" id="strip"><div class="track" id="track"></div></div>
@@ -148,7 +149,7 @@ const BLOBS=[
  {name:"Genie-3",fixed:true,zone:[720,300,720,300],r:62},
  {name:"PAN",zone:[110,400,330,560],r:48},
  {name:"Marble",zone:[1210,40,1370,170],r:48}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,fear:0,
-  t:Array.from({length:b.fixed?9:8},(_,j)=>({a:j/(b.fixed?9:8)*Math.PI*2+i,len:16+Math.random()*(b.fixed?26:38),ph:Math.random()*6,sp:.4+Math.random()*.6}))}));
+  t:Array.from({length:b.fixed?0:8},(_,j)=>({a:j/8*Math.PI*2+i,len:16+Math.random()*(b.fixed?26:38),ph:Math.random()*6,sp:.4+Math.random()*.6}))}));
 const STILL=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function blobFrame(ms){
  const g=document.getElementById("blobs");if(!g)return;const t=ms/1000;let h="";
