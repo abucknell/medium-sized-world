@@ -145,14 +145,16 @@ const MAP=[
  {l:"3",x:690,y:525},{l:"4",x:470,y:420},{l:"5",x:500,y:170}];
 // Untested models drift in their own zones, growing tendrils that reach for nothing yet.
 const BLOBS=[
- {name:"PAN",zone:[110,400,330,560],r:32},
- {name:"Marble",zone:[1210,40,1370,170],r:32}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,fear:0,
-  t:Array.from({length:7},(_,j)=>({a:j/7*Math.PI*2+i,len:14+Math.random()*32,ph:Math.random()*6,sp:.4+Math.random()*.6}))}));
+ {name:"Genie-3",fixed:true,zone:[720,300,720,300],r:62},
+ {name:"PAN",zone:[110,400,330,560],r:48},
+ {name:"Marble",zone:[1210,40,1370,170],r:48}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,fear:0,
+  t:Array.from({length:b.fixed?9:8},(_,j)=>({a:j/(b.fixed?9:8)*Math.PI*2+i,len:16+Math.random()*(b.fixed?26:38),ph:Math.random()*6,sp:.4+Math.random()*.6}))}));
 const STILL=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function blobFrame(ms){
  const g=document.getElementById("blobs");if(!g)return;const t=ms/1000;let h="";
  BLOBS.forEach(b=>{
-  if(!STILL){b.vx+=(Math.random()-.5)*.06;b.vy+=(Math.random()-.5)*.06;b.vx*=.985;b.vy*=.985;
+  if(!STILL&&b.fixed)b.clock=(b.clock||0)+1/60;
+  else if(!STILL){b.vx+=(Math.random()-.5)*.06;b.vy+=(Math.random()-.5)*.06;b.vx*=.985;b.vy*=.985;
    const [x0,y0,x1,y1]=b.zone;if(b.x<x0)b.vx+=.03;if(b.x>x1)b.vx-=.03;if(b.y<y0)b.vy+=.03;if(b.y>y1)b.vy-=.03;b.x+=b.vx;b.y+=b.vy;
    if(b.x<b.r+50||b.x>1440-b.r-50)b.vx*=-.8;if(b.y<b.r+50||b.y>620-b.r-30)b.vy*=-.8;b.x=Math.min(Math.max(b.x,b.r+50),1440-b.r-50);b.y=Math.min(Math.max(b.y,b.r+50),620-b.r-30);
    b.fear*=.985;b.clock=(b.clock||0)+(1+b.fear*4)/60}
@@ -161,19 +163,27 @@ function blobFrame(ms){
    const sx=b.x+Math.cos(a)*r,sy=b.y+Math.sin(a)*r,ex=b.x+Math.cos(a)*(r+L),ey=b.y+Math.sin(a)*(r+L);
    const bend=Math.sin(t*d.sp*1.3+d.ph)*L*.45,mx=(sx+ex)/2-Math.sin(a)*bend,my=(sy+ey)/2+Math.cos(a)*bend;
    h+=`<path d="M${sx.toFixed(1)},${sy.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}" stroke="var(--ink)" stroke-width=".8" fill="none" stroke-linecap="round"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="2.6" fill="var(--hl)"/>`});
-  h+=`<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r}" fill="var(--ink)" style="cursor:pointer"/><text x="${b.x.toFixed(1)}" y="${(b.y+4).toFixed(1)}" text-anchor="middle" fill="#fff" style="font-size:12px;pointer-events:none">${b.name}</text>`});
+  h+=`<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r}" fill="var(--ink)" style="cursor:${b.fixed?"default":"pointer"}"/><text x="${b.x.toFixed(1)}" y="${(b.y+4).toFixed(1)}" text-anchor="middle" fill="#fff" style="font-size:${b.fixed?14:13}px;pointer-events:none">${b.name}</text>`});
  g.innerHTML=h;wigFrame();if(!STILL)requestAnimationFrame(blobFrame);
 }
 // Click a model and it wriggles away from the cursor.
 document.getElementById("map").addEventListener("pointerdown",e=>{const svg=e.currentTarget,pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
  const q=pt.matrixTransform(svg.getScreenCTM().inverse());
- BLOBS.forEach(b=>{const dx=b.x-q.x,dy=b.y-q.y,d=Math.hypot(dx,dy)||1;if(d<b.r+24){b.vx+=dx/d*3.2;b.vy+=dy/d*3.2;b.fear=1}})});
+ BLOBS.forEach(b=>{const dx=b.x-q.x,dy=b.y-q.y,d=Math.hypot(dx,dy)||1;if(!b.fixed&&d<b.r+24){b.vx+=dx/d*3.2;b.vy+=dy/d*3.2;b.fear=1}})});
 // Green arrows that wriggle like the tendrils when hovered.
 const WA=`<svg viewBox="0 0 64 40" aria-hidden="true"><path/></svg>`;
+// Each click makes that arrow wriggle faster (and a little wilder).
+document.addEventListener("click",e=>{const w=e.target.closest(".wa");if(w){w._n=Math.min((w._n||0)+1,12);w._kick=1}},true);
 function wigFrame(){const now=performance.now()/1000;document.querySelectorAll(".wa").forEach(el=>{
- el._a=(el._a||0)+(((el.matches(":hover")||el.matches(":focus-visible"))&&!STILL?1:0)-(el._a||0))*.12;const A=el._a,t=now*7;
+ const dt=Math.min(now-(el._last||now),.1);el._last=now;el._kick=(el._kick||0)*.97;const n=el._n||0;
+ el._a=(el._a||0)+(Math.max((el.matches(":hover")||el.matches(":focus-visible"))?1:0,el._kick)*(STILL?0:1)*(1+n*.06)-(el._a||0))*.12;const A=el._a;
+ el._ph=(el._ph||0)+dt*7*(1+n*.6);const t=el._ph;
  const y1=20-9*A*Math.sin(t),y2=20+9*A*Math.sin(t+1.6),hy=20+3*A*Math.sin(t+.8),k=4*A*Math.sin(t*1.3);
  el.querySelector("path").setAttribute("d",`M6,${20+4*A*Math.sin(t+2.4)} C22,${y1} 36,${y2} 52,${hy} M52,${hy} L${40+k*.3},${10+k} M52,${hy} L${40-k*.3},${30+k}`)})}
+// Drift slowly down to an element instead of jumping.
+function drift(el,ms=2800){if(STILL){el.scrollIntoView();return}const y0=scrollY,y1=el.getBoundingClientRect().top+scrollY-10,t0=performance.now();
+ const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;let stop=false;const cancel=()=>stop=true;addEventListener("wheel",cancel,{once:true});addEventListener("touchstart",cancel,{once:true});
+ (function f(now){if(stop)return;const k=Math.min((now-t0)/ms,1);scrollTo(0,y0+(y1-y0)*ease(k));if(k<1)requestAnimationFrame(f)})(t0)}
 // Find: highlight every place a keyword appears and step through the hits.
 const FIND={hits:[],i:0};
 function clearHits(){document.querySelectorAll("main mark.hit").forEach(m=>{const p=m.parentNode;p.replaceChild(document.createTextNode(m.textContent),m);p.normalize()});FIND.hits=[]}
@@ -204,13 +214,12 @@ function drawMap(){
  MAP.filter(m=>!m.plan&&m.side).forEach((m,i)=>{const t=C.test(m.l),kw=((C.info(t).kw||{}).patterns||[]).slice(0,3),r=R(m),right=m.side==="right";
   kw.forEach((k,j)=>{const w=k.length*6.6+22,ky=m.y+(j-(kw.length-1)/2)*30,kx0=right?m.x+r+34:m.x-r-34-w,ax=right?kx0:kx0+w;
   s+=`<path class="edge k" d="M${m.x+(right?r:-r)},${m.y} L${ax},${ky}"/><g class="pill float" data-k="${esc(k)}" data-t="${t.label}" tabindex="0" role="button" aria-label="Find ${esc(k)}" style="animation-delay:${-(i*3+j)*.7}s"><rect x="${kx0}" y="${ky-11}" width="${w}" height="22" rx="11"/><text x="${kx0+w/2}" y="${ky}">${esc(k)}</text></g>`})});
- s+=`<g class="core"><circle cx="${cx}" cy="${cy}" r="46"/><text x="${cx}" y="${cy+4}" style="font-size:13px">Genie-3</text></g>`;
- MAP.forEach(m=>{const r=R(m);
+  MAP.forEach(m=>{const r=R(m);
   if(m.plan){s+=`<g class="plan"><circle cx="${m.x}" cy="${m.y}" r="${r}" fill="#fff" stroke="var(--green)" stroke-dasharray="3 3"/><text x="${m.x}" y="${m.y+4}" text-anchor="middle" style="font-size:12px;fill:var(--green)">Test ${m.l}</text><text x="${m.x}" y="${m.y+r+18}" text-anchor="middle" style="font-size:12px">${esc(m.name)}</text><text x="${m.x}" y="${m.y+r+33}" text-anchor="middle" style="font-size:11px;fill:var(--soft)">${esc(m.sub)}</text></g>`;return}
   const t=C.test(m.l),n=C.worlds(t).length;
   s+=`<g class="node${t===T?" on":""}" data-t="${t.label}" tabindex="0" role="button" aria-label="Test ${t.label}"><circle cx="${m.x}" cy="${m.y}" r="${r}"/><text class="lab" x="${m.x}" y="${m.y-2}">Test ${t.label}</text><text class="mono" x="${m.x}" y="${m.y+14}" style="font-size:10.5px">${n}/${t.runs}</text><text x="${m.x}" y="${m.y+r+18}" style="font-size:12px">${esc(m.sub||t.name)}</text></g>`});
  svg.innerHTML=s;if(STILL)blobFrame(0);else if(!window._blob){window._blob=1;requestAnimationFrame(blobFrame)}
- svg.querySelectorAll(".node").forEach(g=>{const go=()=>{T=C.test(g.dataset.t);history.replaceState(0,"","?t="+T.label);render();document.querySelector("main").scrollIntoView({behavior:"smooth"})};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
+ svg.querySelectorAll(".node").forEach(g=>{const go=()=>{T=C.test(g.dataset.t);history.replaceState(0,"","?t="+T.label);render();drift(document.querySelector("main"))};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
  svg.querySelectorAll(".pill").forEach(g=>{const go=()=>{const t=C.test(g.dataset.t);if(t!==T){T=t;history.replaceState(0,"","?t="+T.label);render()}findKw(g.dataset.k)};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
 }
 let LB=[],LI=-1;
