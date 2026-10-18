@@ -93,7 +93,7 @@ details.frame[open]>summary::after{background:linear-gradient(var(--ink),var(--i
 </style></head><body>
 <header>
   <h1>Medium<br>Sized<br>World</h1>
-  <p>A research system for testing bias in Google Project Genie world models. Pick a test on the map.</p>
+  <p>A research system for testing bias, glitch, semantic drift, reality gaps and collapse in emerging world models. Models featured in the experiment include Genie-3, Marble, and PAN.</p>
 </header>
 <div class="map"><svg id="map" viewBox="0 0 1200 520" role="img" aria-label="Map of the six tests"></svg></div>
 <div class="strip" id="strip"><div class="track" id="track"></div></div>
@@ -128,18 +128,27 @@ function drawMap(){
  svg.innerHTML=s;
  svg.querySelectorAll(".node").forEach(g=>{const go=()=>{T=C.test(g.dataset.t);history.replaceState(0,"","?t="+T.label);render();document.querySelector("main").scrollIntoView({behavior:"smooth"})};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
 }
+let LB=[],LI=-1;
 function strip(){
- const all=C.D.worlds.filter(w=>w.hero).sort((a,b)=>(a.test-b.test)||(a.num-b.num));
- const f=all.map(w=>`<figure data-id="${w.id}"><img src="${esc(w.hero)}" alt="" loading="lazy"><figcaption><span class="mono g">${C.TESTS.find(t=>t.num===w.test).label}·${pad(w.num)}</span>${esc(w.name)}</figcaption></figure>`).join("");
- document.getElementById("track").innerHTML=f+f;
- document.querySelectorAll("#track figure").forEach(x=>x.onclick=()=>lightbox(x.dataset.id));
+ const ws=C.worlds(T).filter(w=>w.hero),el=document.getElementById("strip"),tr=document.getElementById("track");
+ if(!ws.length){el.style.display="none";tr.innerHTML="";return}
+ el.style.display="";
+ const fig=w=>`<figure data-id="${w.id}"><img src="${esc(w.hero)}" alt="" loading="lazy"><figcaption><span class="mono g">${T.label}·${pad(w.num)}</span>${esc(w.name)}</figcaption></figure>`;
+ // repeat short sets so one copy is always wider than the screen, then double it for a seamless loop
+ let set=[];while(set.length<Math.max(8,ws.length))set=set.concat(ws);
+ const one=set.map(fig).join("");tr.innerHTML=one+one;
+ tr.style.animationDuration=(set.length*9)+"s";
+ tr.querySelectorAll("figure").forEach(x=>x.onclick=()=>lightbox(x.dataset.id));
 }
-function lightbox(id){const w=C.D.worlds.find(w=>w.id===id);if(!w)return;const lb=document.getElementById("lb");lb.querySelector("img").src=w.hero;
- lb.querySelector("figcaption").innerHTML=`<span class="mono g">${pad(w.num)}</span><b style="font-weight:500">${esc(w.name)}</b><p>${esc(w.heroNote||w.description||"")}</p>${w.bias?`<p class="g">${esc(w.bias)}</p>`:""}`;lb.classList.add("on")}
+function lightbox(id){LB=C.worlds(T).filter(w=>w.hero);LI=LB.findIndex(w=>w.id===id);if(LI<0)return;showLB()}
+function showLB(){const w=LB[LI],lb=document.getElementById("lb");lb.querySelector("img").src=w.hero;
+ lb.querySelector("figcaption").innerHTML=`<span class="mono g">${T.label}·${pad(w.num)}</span><b style="font-weight:500">${esc(w.name)}</b><p>${esc(w.heroNote||w.description||"")}</p>${w.bias?`<p class="g">${esc(w.bias)}</p>`:""}<p class="mono" style="color:var(--soft)">${LI+1} / ${LB.length} · use ← → to move, Esc to close</p>`;lb.classList.add("on")}
 document.getElementById("lb").onclick=e=>e.currentTarget.classList.remove("on");
-document.addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("lb").classList.remove("on")});
+document.addEventListener("keydown",e=>{const lb=document.getElementById("lb");if(!lb.classList.contains("on"))return;
+ if(e.key==="Escape")lb.classList.remove("on");
+ else if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();LI=(LI+(e.key==="ArrowRight"?1:-1)+LB.length)%LB.length;showLB()}});
 function render(){
- drawMap();
+ drawMap();strip();
  const I=C.info(T),S=C.stats(T),ws=C.worlds(T),gs=C.glitches(T);
  tnum.textContent=T.label;tname.textContent=I.title||T.name;tcount.textContent=`${S.worlds} of ${S.runs} worlds logged`;
  const B=[];const bub=(n,of,l)=>{const r=Math.max(.15,of?n/of:0),d=Math.round(46+Math.sqrt(of||1)*14);B.push(`<div class="bub"><div class="c" style="width:${d}px;height:${d}px"><i style="height:${Math.round(r*100)}%"></i><b>${n}</b></div><span>${l}</span></div>`)};
@@ -160,5 +169,5 @@ function render(){
  pat.textContent=I.patterns||"Patterns appear once a few worlds are logged.";
  ana.innerHTML=I.judgement?C.numbered(I.judgement).map(p=>`<p>${esc(p)}</p>`).join(""):"<p class='mono'>Analysis comes later.</p>";
 }
-strip();render();
+render();
 </script></body></html>
