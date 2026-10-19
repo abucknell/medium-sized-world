@@ -35,6 +35,8 @@ const TOTAL=12; // globes on the page; videos fill them in order, the rest stay 
 const cv=document.getElementById("gl"),gl=cv.getContext("webgl",{premultipliedAlpha:true,antialias:true});
 const modal=document.getElementById("modal"),mv=document.getElementById("mv"),tip=document.getElementById("tip");
 let B=[],R=100,hover=-1,DPR=1;
+// globes start slow; each time a video is closed they speed up (capped so they stay clickable)
+let SPEED=.9;const SPEEDUP=1.4,MAXSPEED=9;
 
 // ---- shaders: each globe is a quad; the fragment shader bends the video like a glass ball
 const VS=`attribute vec2 a;uniform vec2 c,res;uniform float r,sc;varying vec2 p;
@@ -85,7 +87,7 @@ function size(){DPR=Math.min(devicePixelRatio||1,2);cv.width=innerWidth*DPR;cv.h
  const n=B.length||TOTAL;R=Math.max(46,Math.min(150,Math.sqrt(innerWidth*innerHeight*.26/(n*Math.PI))));B.forEach(b=>b.r=R)}
 function build(vids){
  const n=Math.max(TOTAL,vids.length+3);B=[];size();
- for(let i=0;i<n;i++){const v=vids[i],a=Math.random()*Math.PI*2,sp=STILL?0:2.2+Math.random()*1.2;
+ for(let i=0;i<n;i++){const v=vids[i],a=Math.random()*Math.PI*2,sp=STILL?0:SPEED*(.8+Math.random()*.4);
   const b={v,r:R,x:R+Math.random()*(innerWidth-2*R),y:R+Math.random()*(innerHeight-2*R),vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,ph:Math.random()*6,seed:Math.random()*6,tex:mkTex(),asp:16/9};
   if(v){const el=document.createElement("video");Object.assign(el,{src:v.loop,muted:true,loop:true,playsInline:true,autoplay:true,preload:"auto",crossOrigin:"anonymous"});
    el.addEventListener("loadedmetadata",()=>b.asp=el.videoWidth/el.videoHeight||16/9);
@@ -100,7 +102,7 @@ function collide(sep){
    if(!sep){const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){a.vx+=rv*nx;a.vy+=rv*ny;b.vx-=rv*nx;b.vy-=rv*ny}}}}} // equal masses
 function step(){const W=innerWidth,H=innerHeight;
  B.forEach(b=>{if(!STILL){const ang=(Math.random()-.5)*.06;const c=Math.cos(ang),s=Math.sin(ang);[b.vx,b.vy]=[b.vx*c-b.vy*s,b.vx*s+b.vy*c];
-   const sp=Math.hypot(b.vx,b.vy),tgt=2.8;if(sp>0){const k=1+(tgt-sp)/sp*.02;b.vx*=k;b.vy*=k}}
+   const sp=Math.hypot(b.vx,b.vy),tgt=SPEED;if(sp>0){const k=1+(tgt-sp)/sp*.02;b.vx*=k;b.vy*=k}}
   b.x+=b.vx;b.y+=b.vy;
   if(b.x<b.r){b.x=b.r;b.vx=Math.abs(b.vx)}if(b.x>W-b.r){b.x=W-b.r;b.vx=-Math.abs(b.vx)}
   if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy)}if(b.y>H-b.r-8){b.y=H-b.r-8;b.vy=-Math.abs(b.vy)}});
@@ -124,7 +126,7 @@ cv.addEventListener("pointermove",e=>{const i=hit(e.clientX,e.clientY);hover=i>=
 cv.addEventListener("pointerleave",()=>{hover=-1;tip.classList.remove("on")});
 cv.addEventListener("click",e=>{const i=hit(e.clientX,e.clientY);if(i>=0&&B[i].v)openVid(B[i].v)});
 function openVid(v){document.getElementById("mt").textContent=v.title;mv.src=v.src;if(v.poster)mv.poster=v.poster;modal.classList.add("on");tip.classList.remove("on");mv.play().catch(()=>{});document.getElementById("x").focus()}
-function closeVid(){modal.classList.remove("on");mv.pause();mv.removeAttribute("src");mv.load()}
+function closeVid(){modal.classList.remove("on");if(!STILL){SPEED=Math.min(SPEED*SPEEDUP,MAXSPEED);B.forEach(b=>{b.vx*=SPEEDUP;b.vy*=SPEEDUP})}mv.pause();mv.removeAttribute("src");mv.load()}
 modal.onclick=e=>{if(e.target===modal)closeVid()};document.getElementById("x").onclick=closeVid;
 addEventListener("keydown",e=>{if(e.key==="Escape"&&modal.classList.contains("on"))closeVid()});
 addEventListener("resize",()=>{size();B.forEach(b=>{b.x=Math.min(Math.max(b.x,b.r),innerWidth-b.r);b.y=Math.min(Math.max(b.y,b.r),innerHeight-b.r)})});
