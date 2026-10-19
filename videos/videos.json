@@ -1,1 +1,20 @@
-[]
+[
+ {
+  "title": "Fingerprint forest",
+  "src": "videos/fingerprint-forest.mp4",
+  "loop": "videos/fingerprint-forest-loop.mp4",
+  "poster": "videos/fingerprint-forest.jpg"
+ },
+ {
+  "title": "Solar Field complex",
+  "src": "videos/solar-field-complex.mp4",
+  "loop": "videos/solar-field-complex-loop.mp4",
+  "poster": "videos/solar-field-complex.jpg"
+ },
+ {
+  "title": "World Model graveyard",
+  "src": "videos/world-model-graveyard.mp4",
+  "loop": "videos/world-model-graveyard-loop.mp4",
+  "poster": "videos/world-model-graveyard.jpg"
+ }
+]

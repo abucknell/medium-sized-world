@@ -1,89 +1,133 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Medium Sized World · Spheres</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&family=Space+Grotesk:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400&display=swap">
 <style>
-/* FK Raster Grotesk shows where it is installed; Space Grotesk stands in elsewhere. */
-@font-face{font-family:"Raster";src:local("FK Raster Grotesk Compact Smooth"),local("FKRasterGroteskCompact-Smooth"),local("FK Raster Grotesk Compact")}
+@font-face{font-family:"Raster";src:url("assets/fonts/FKRasterGroteskCompact-Smooth.otf") format("opentype");font-display:swap}
 :root{--ink:#0d0d0d;--soft:#777;--green:#00b347;--hl:#c8ffd9;--bg:#fff}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:400 15px/1.4 "Inter Tight",system-ui,sans-serif}
-.top{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:18px 24px;z-index:5;pointer-events:none}
-.top a,.top span{pointer-events:auto}
+.top{position:fixed;left:24px;top:18px;z-index:5}
 .top a{color:var(--green);text-decoration:none}
 .top a:hover{text-decoration:underline}
-.top span{color:var(--soft);font-size:13px}
-#field{position:fixed;inset:0}
-.sph{position:absolute;left:0;top:0;border-radius:50%;overflow:hidden;will-change:transform;
- box-shadow:0 22px 40px -18px rgba(0,0,0,.35),inset 0 0 0 1px rgba(0,0,0,.06)}
-.sph video{position:absolute;inset:-14%;width:128%;height:128%;object-fit:cover;filter:saturate(1.1) contrast(1.05)}
-/* shading and reflections that make a flat disc read as a glossy sphere */
-.sph::before{content:"";position:absolute;inset:0;border-radius:50%;z-index:2;pointer-events:none;
- background:radial-gradient(circle at 50% 50%,transparent 52%,rgba(0,0,0,.18) 72%,rgba(0,0,0,.55) 100%),
- radial-gradient(ellipse 60% 40% at 50% 104%,rgba(200,255,217,.45),transparent 70%)}
-.sph::after{content:"";position:absolute;inset:0;border-radius:50%;z-index:3;pointer-events:none;
- background:radial-gradient(ellipse 34% 22% at 34% 24%,rgba(255,255,255,.95),rgba(255,255,255,.35) 45%,transparent 75%),
- radial-gradient(circle at 70% 78%,rgba(255,255,255,.18),transparent 30%),
- linear-gradient(160deg,rgba(255,255,255,.22),transparent 38%)}
-.sph.empty{background:radial-gradient(circle at 36% 30%,#ffffff 0,#f1f4f2 22%,#cfd8d2 52%,#9aa59e 82%,#7f8a83 100%)}
-.sph.empty::before{background:radial-gradient(circle at 50% 50%,transparent 58%,rgba(0,0,0,.12) 100%),
- radial-gradient(ellipse 70% 30% at 50% 100%,rgba(200,255,217,.7),transparent 70%),
- linear-gradient(180deg,transparent 46%,rgba(255,255,255,.35) 48%,transparent 52%)}
-.sph.vid{cursor:pointer}
-.sph.vid:hover{box-shadow:0 22px 40px -18px rgba(0,0,0,.35),0 0 0 3px var(--hl)}
-.sph .t{position:absolute;left:0;right:0;bottom:16%;text-align:center;z-index:4;color:#fff;font:500 13px "Raster","Space Grotesk",sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.5);opacity:0;transition:opacity .2s;pointer-events:none}
-.sph.vid:hover .t,.sph.vid:focus-visible .t{opacity:1}
-.sph:focus-visible{outline:2px dashed var(--green);outline-offset:4px}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+#tip{position:fixed;z-index:6;pointer-events:none;color:var(--green);font:24px/1 "Raster",sans-serif;opacity:0;transition:opacity .15s;white-space:nowrap;text-shadow:0 0 10px #fff,0 0 2px #fff}
+#tip.on{opacity:1}
+.sr{position:fixed;left:-9999px;top:0}
+.sr button:focus{left:24px}
 .modal{position:fixed;inset:0;z-index:10;background:rgba(255,255,255,.9);display:none;place-items:center;padding:24px}
 .modal.on{display:grid}
-.box{position:relative;width:min(1200px,100%);max-height:calc(100vh - 48px);border:4px solid var(--hl);border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 80px -30px rgba(0,0,0,.4)}
+.box{position:relative;width:min(1200px,100%);border:4px solid var(--hl);border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 80px -30px rgba(0,0,0,.4)}
 .box video{display:block;width:100%;max-height:calc(100vh - 56px);background:#000}
-.box h2{position:absolute;left:22px;top:16px;margin:0;z-index:2;color:var(--green);font:500 clamp(22px,3.4vw,44px)/1 "Raster","Space Grotesk",sans-serif;letter-spacing:.01em;pointer-events:none;text-shadow:0 0 18px rgba(0,0,0,.35)}
+.box h2{position:absolute;left:22px;top:14px;margin:0;z-index:2;color:var(--green);font:400 clamp(26px,4vw,52px)/1 "Raster",sans-serif;pointer-events:none;text-shadow:0 0 18px rgba(0,0,0,.35)}
 .x{all:unset;position:absolute;right:14px;top:10px;z-index:3;cursor:pointer;color:var(--hl);font-size:30px;line-height:1;padding:4px 8px}
 .x:focus-visible{outline:1px dashed var(--hl)}
-@media (max-width:640px){.top{padding:14px 16px}.box h2{left:14px;top:10px}}
+@media (max-width:640px){.top{left:16px;top:14px}.box h2{left:14px;top:10px}}
 </style></head><body>
-<div class="top"><a href="./">← Medium Sized World</a><span id="count"></span></div>
-<div id="field" aria-label="Video spheres"></div>
+<div class="top"><a href="./">← Medium Sized World</a></div>
+<canvas id="gl" aria-label="Glass spheres with world videos inside"></canvas>
+<div id="tip"></div>
+<div class="sr" id="sr"></div>
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="box"><h2 id="mt"></h2><button class="x" id="x" aria-label="Close video">×</button><video id="mv" controls playsinline></video></div></div>
 <script>
 const STILL=matchMedia("(prefers-reduced-motion: reduce)").matches;
-const TOTAL=12; // spheres on the page; videos fill them in order, the rest stay empty
-const field=document.getElementById("field"),modal=document.getElementById("modal"),mv=document.getElementById("mv");
-let B=[];
+const TOTAL=12; // globes on the page; videos fill them in order, the rest stay empty glass
+const cv=document.getElementById("gl"),gl=cv.getContext("webgl",{premultipliedAlpha:true,antialias:true});
+const modal=document.getElementById("modal"),mv=document.getElementById("mv"),tip=document.getElementById("tip");
+let B=[],R=100,hover=-1,DPR=1;
+
+// ---- shaders: each globe is a quad; the fragment shader bends the video like a glass ball
+const VS=`attribute vec2 a;uniform vec2 c,res;uniform float r,sc;varying vec2 p;
+void main(){p=vec2(a.x,-a.y);vec2 q=c+a*r*sc;gl_Position=vec4(q/res*2.-1.,0.,1.);gl_Position.y*=-1.;}`;
+const FS=`precision mediump float;varying vec2 p;uniform sampler2D tex;uniform float has,asp,hov,mode,t,seed;
+vec3 vid(vec2 q){vec2 uv=vec2(.5+q.x*.5/asp*1.02,.5-q.y*.5*1.02);return texture2D(tex,clamp(uv,0.,1.)).rgb;}
+void main(){
+ float d2=dot(p,p);
+ if(mode>.5){ // soft shadow on the floor under the globe
+  float s=exp(-(p.x*p.x*1.6+p.y*p.y*9.)*2.4);gl_FragColor=vec4(0.,0.,0.,.14*s);return;}
+ float d=sqrt(d2);float aa=fwidth(d)*1.5;float edge=1.-smoothstep(1.-aa,1.,d);if(edge<=0.)discard;
+ float z=sqrt(max(1.-d2,0.));vec3 n=vec3(p,z);
+ // glass-ball refraction: magnify the middle, squeeze and flip the rim (like a snowglobe)
+ float k=asin(min(d,.9999))/1.5708;vec2 dir=d>0.?p/d:vec2(0.);
+ vec2 q=dir*k*.92;q*=mix(1.,-.55,smoothstep(.82,1.,d)); // inverted sliver at the very edge
+ vec3 col;
+ if(has>.5){float ca=.018*(1.-z);col=vec3(vid(q*(1.+ca)).r,vid(q).g,vid(q*(1.-ca)).b);col=mix(col,col*vec3(.92,.97,1.),.3);}
+ else{col=vec3(.985,.995,.988)-.10*(1.-z)+vec3(-.03,.01,-.02)*smoothstep(0.,-1.,p.y);
+  // a faint upside-down horizon, as if the globe reflects the room
+  col-=.05*smoothstep(.02,0.,abs(p.y+.18+.06*sin(p.x*3.+seed)))*(1.-d);}
+ float fr=pow(1.-z,2.6);
+ vec3 rim=mix(vec3(1.),vec3(.78,1.,.85),smoothstep(.3,-1.,p.y)); // green glow on the lower rim
+ col=mix(col,rim,fr*(has>.5?.55:.35));
+ col*=1.-.18*smoothstep(.55,.97,d)*(1.-fr); // glass thickness darkens just inside the rim
+ vec3 L=normalize(vec3(-.42,.55,.72));
+ float sp=pow(max(dot(n,L),0.),120.)*1.4+pow(max(dot(n,L),0.),14.)*.18;
+ float sp2=pow(max(dot(n,normalize(vec3(.55,-.5,.67))),0.),60.)*.35;
+ // soft curved reflection of a window on the upper left
+ vec2 w=(p-vec2(-.34,.40))*vec2(2.6,3.6);float win=(1.-smoothstep(.55,1.,length(w*w)))*.16*z;
+ col+=vec3(sp+sp2+win);
+ float ring=smoothstep(.93,.995,d)*(1.-smoothstep(.995,1.,d));col=mix(col,vec3(1.),ring*.5);
+ col=mix(col,vec3(.55,1.,.7),hov*smoothstep(.9,1.,d)*.9);
+ float alpha=edge*(has>.5?1.:.92);gl_FragColor=vec4(col*alpha,alpha);}`;
+function sh(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(s);return s}
+let prog,U={};
+function setup(){gl.getExtension("OES_standard_derivatives");
+ prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,"#extension GL_OES_standard_derivatives : enable\n"+FS));gl.linkProgram(prog);gl.useProgram(prog);
+ const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+ const loc=gl.getAttribLocation(prog,"a");gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+ ["c","res","r","sc","tex","has","asp","hov","mode","t","seed"].forEach(k=>U[k]=gl.getUniformLocation(prog,k));
+ gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);}
+function mkTex(){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
+ [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));
+ gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([230,240,234,255]));return t}
+
+function size(){DPR=Math.min(devicePixelRatio||1,2);cv.width=innerWidth*DPR;cv.height=innerHeight*DPR;gl.viewport(0,0,cv.width,cv.height);
+ const n=B.length||TOTAL;R=Math.max(46,Math.min(150,Math.sqrt(innerWidth*innerHeight*.26/(n*Math.PI))));B.forEach(b=>b.r=R)}
 function build(vids){
- const n=Math.max(TOTAL,vids.length+3),W=innerWidth,H=innerHeight;
- const base=Math.sqrt(W*H*.30/(n*Math.PI));
- B=Array.from({length:n},(_,i)=>{const v=vids[i],r=base*(v?1.15:.7+Math.random()*.5);
-  const el=document.createElement("div");el.className="sph "+(v?"vid":"empty");el.style.width=el.style.height=2*r+"px";
-  if(v){el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label","Play "+v.title);
-   el.innerHTML=`<video src="${v.loop}" ${v.poster?`poster="${v.poster}"`:""} muted loop autoplay playsinline preload="auto"></video><span class="t">${v.title.replace(/[&<>]/g,"")}</span>`;
-   const open=()=>openVid(v);el.onclick=open;el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}}}
-  field.appendChild(el);
-  const a=Math.random()*Math.PI*2,sp=(STILL?0:.5+Math.random()*.7);
-  return {el,r,m:r*r,x:r+Math.random()*(W-2*r),y:r+Math.random()*(H-2*r),vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,ph:Math.random()*6}});
- // spread out any spheres that start on top of each other
- for(let k=0;k<200;k++)collide(true);
- document.getElementById("count").textContent=`${vids.length} of ${n} spheres hold a world`;
+ const n=Math.max(TOTAL,vids.length+3);B=[];size();
+ for(let i=0;i<n;i++){const v=vids[i],a=Math.random()*Math.PI*2,sp=STILL?0:2.2+Math.random()*1.2;
+  const b={v,r:R,x:R+Math.random()*(innerWidth-2*R),y:R+Math.random()*(innerHeight-2*R),vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,ph:Math.random()*6,seed:Math.random()*6,tex:mkTex(),asp:16/9};
+  if(v){const el=document.createElement("video");Object.assign(el,{src:v.loop,muted:true,loop:true,playsInline:true,autoplay:true,preload:"auto",crossOrigin:"anonymous"});
+   el.addEventListener("loadedmetadata",()=>b.asp=el.videoWidth/el.videoHeight||16/9);
+   if(v.poster){const im=new Image();im.onload=()=>{if(b.live)return;gl.bindTexture(gl.TEXTURE_2D,b.tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);b.asp=im.width/im.height;b.ready=true};im.src=v.poster}el.play().catch(()=>{});b.el=el;
+   const btn=document.createElement("button");btn.textContent="Play "+v.title;btn.onclick=()=>openVid(v);document.getElementById("sr").appendChild(btn)}
+  B.push(b)}
+ size();for(let k=0;k<300;k++)collide(true);
 }
 function collide(sep){
  for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++){const a=B[i],b=B[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||.01,min=a.r+b.r;
   if(d<min){const nx=dx/d,ny=dy/d,o=(min-d)/2;a.x-=nx*o;a.y-=ny*o;b.x+=nx*o;b.y+=ny*o;
-   if(!sep){const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){const imp=2*rv/(a.m+b.m);a.vx+=imp*b.m*nx;a.vy+=imp*b.m*ny;b.vx-=imp*a.m*nx;b.vy-=imp*a.m*ny}}}}
-}
-function frame(ms){const W=innerWidth,H=innerHeight,t=ms/1000;
- B.forEach(b=>{b.x+=b.vx;b.y+=b.vy;
+   if(!sep){const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){a.vx+=rv*nx;a.vy+=rv*ny;b.vx-=rv*nx;b.vy-=rv*ny}}}}} // equal masses
+function step(){const W=innerWidth,H=innerHeight;
+ B.forEach(b=>{if(!STILL){const ang=(Math.random()-.5)*.06;const c=Math.cos(ang),s=Math.sin(ang);[b.vx,b.vy]=[b.vx*c-b.vy*s,b.vx*s+b.vy*c];
+   const sp=Math.hypot(b.vx,b.vy),tgt=2.8;if(sp>0){const k=1+(tgt-sp)/sp*.02;b.vx*=k;b.vy*=k}}
+  b.x+=b.vx;b.y+=b.vy;
   if(b.x<b.r){b.x=b.r;b.vx=Math.abs(b.vx)}if(b.x>W-b.r){b.x=W-b.r;b.vx=-Math.abs(b.vx)}
-  if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy)}if(b.y>H-b.r){b.y=H-b.r;b.vy=-Math.abs(b.vy)}
-  // keep a gentle, even pace like balls on felt that never quite stop
-  const s=Math.hypot(b.vx,b.vy);if(s>0){const k=s<.45?1.01:s>1.4?.99:1;b.vx*=k;b.vy*=k}});
- collide(false);
- B.forEach(b=>{const bob=STILL?0:Math.sin(t*1.2+b.ph)*3;b.el.style.transform=`translate(${(b.x-b.r).toFixed(1)}px,${(b.y-b.r+bob).toFixed(1)}px)`});
- requestAnimationFrame(frame)}
-function openVid(v){document.getElementById("mt").textContent=v.title;mv.src=v.src;if(v.poster)mv.poster=v.poster;modal.classList.add("on");mv.play().catch(()=>{});document.getElementById("x").focus()}
+  if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy)}if(b.y>H-b.r-8){b.y=H-b.r-8;b.vy=-Math.abs(b.vy)}});
+ collide(false)}
+function draw(ms){const t=ms/1000;if(!modal.classList.contains("on"))step();
+ gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.uniform2f(U.res,innerWidth*DPR,innerHeight*DPR);gl.uniform1f(U.t,t);
+ B.forEach(b=>{b.bob=STILL?0:Math.sin(t*2.1+b.ph)*2.5});
+ // shadows first, then the glass
+ gl.uniform1f(U.mode,1);B.forEach(b=>{gl.uniform2f(U.c,b.x*DPR,(b.y+b.r*.92)*DPR);gl.uniform1f(U.r,b.r*DPR);gl.uniform1f(U.sc,1);
+  const s=1-b.bob*.01;gl.uniform2f(U.c,b.x*DPR,(b.y+b.r*.95)*DPR);gl.uniform1f(U.sc,1.1*s);drawQuad(true)});
+ gl.uniform1f(U.mode,0);
+ B.forEach((b,i)=>{gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,b.tex);
+  if(b.el&&b.el.readyState>=2&&b.el.videoWidth){try{gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,b.el);b.live=b.ready=true}catch(e){}}
+  gl.uniform1i(U.tex,0);gl.uniform1f(U.has,b.ready?1:0);gl.uniform1f(U.asp,b.asp);gl.uniform1f(U.hov,i===hover?1:0);gl.uniform1f(U.seed,b.seed);
+  gl.uniform2f(U.c,b.x*DPR,(b.y+b.bob)*DPR);gl.uniform1f(U.r,b.r*DPR);gl.uniform1f(U.sc,1);drawQuad()});
+ requestAnimationFrame(draw)}
+function drawQuad(shadow){if(shadow){/* squash the shadow into an ellipse */}gl.drawArrays(gl.TRIANGLE_STRIP,0,4)}
+function hit(x,y){for(let i=B.length-1;i>=0;i--){const b=B[i];if(Math.hypot(x-b.x,y-(b.y+(b.bob||0)))<b.r)return i}return -1}
+cv.addEventListener("pointermove",e=>{const i=hit(e.clientX,e.clientY);hover=i>=0&&B[i].v?i:-1;cv.style.cursor=hover>=0?"pointer":"default";
+ if(hover>=0){tip.textContent=B[hover].v.title;tip.style.left=Math.min(e.clientX+16,innerWidth-tip.offsetWidth-12)+"px";tip.style.top=(e.clientY+14)+"px";tip.classList.add("on")}else tip.classList.remove("on")});
+cv.addEventListener("pointerleave",()=>{hover=-1;tip.classList.remove("on")});
+cv.addEventListener("click",e=>{const i=hit(e.clientX,e.clientY);if(i>=0&&B[i].v)openVid(B[i].v)});
+function openVid(v){document.getElementById("mt").textContent=v.title;mv.src=v.src;if(v.poster)mv.poster=v.poster;modal.classList.add("on");tip.classList.remove("on");mv.play().catch(()=>{});document.getElementById("x").focus()}
 function closeVid(){modal.classList.remove("on");mv.pause();mv.removeAttribute("src");mv.load()}
 modal.onclick=e=>{if(e.target===modal)closeVid()};document.getElementById("x").onclick=closeVid;
 addEventListener("keydown",e=>{if(e.key==="Escape"&&modal.classList.contains("on"))closeVid()});
-addEventListener("resize",()=>B.forEach(b=>{b.x=Math.min(b.x,innerWidth-b.r);b.y=Math.min(b.y,innerHeight-b.r)}));
-fetch("videos/videos.json",{cache:"no-store"}).then(r=>r.ok?r.json():[]).catch(()=>[]).then(v=>{build(v);requestAnimationFrame(frame)});
+addEventListener("resize",()=>{size();B.forEach(b=>{b.x=Math.min(Math.max(b.x,b.r),innerWidth-b.r);b.y=Math.min(Math.max(b.y,b.r),innerHeight-b.r)})});
+setup();
+fetch("videos/videos.json",{cache:"no-store"}).then(r=>r.ok?r.json():[]).catch(()=>[]).then(v=>{build(v);requestAnimationFrame(draw)});
 </script></body></html>
