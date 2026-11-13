@@ -152,18 +152,18 @@ const {esc,pad}=C;let T=C.test(new URLSearchParams(location.search).get("t")||"1
 const NS="http://www.w3.org/2000/svg";
 // Hand-placed map. A sub-test springs out of its parent instead of out of Genie.
 const MAP=[
- {l:"1A",x:850,y:110,side:"right"},
- {l:"1B",x:1040,y:265,from:"1A",side:"right"},
- {l:"2",x:960,y:445,side:"right",sub:"Object Permanence: real-world objects"},
- {plan:true,l:"2B",x:1215,y:545,from:"2",name:"Invented agents",sub:"Overworld story world · planned"},
- {l:"3",x:690,y:525},{l:"4",x:470,y:420},
- {l:"4B",x:330,y:290,from:"4"},{l:"5",x:520,y:150},
- {l:"1A-PAN",x:160,y:320,from:"PAN"},{l:"1A-PAN-K",x:250,y:160,from:"PAN"},{l:"1B-PAN",x:390,y:540,from:"PAN"},{l:"1B-PAN-K",x:140,y:540,from:"PAN"}];
+ {l:"1A",x:930,y:110,side:"right"},
+ {l:"1B",x:1100,y:265,from:"1A",side:"right"},
+ {l:"2",x:1030,y:445,side:"right",sub:"Object Permanence: real-world objects"},
+ {plan:true,l:"2B",x:1270,y:550,from:"2",name:"Invented agents",sub:"Overworld story world · planned"},
+ {l:"3",x:800,y:530},{l:"4A",x:600,y:450},
+ {l:"4B",x:600,y:295,from:"4A"},{l:"5",x:650,y:130},
+ {l:"1A-PAN",x:170,y:300,from:"PAN"},{l:"1A-PAN-K",x:330,y:150,from:"PAN"},{l:"1B-PAN",x:440,y:555,from:"PAN"},{l:"1B-PAN-K",x:170,y:555,from:"PAN"}];
 // Untested models drift in their own zones, growing tendrils that reach for nothing yet.
 const BLOBS=[
- {name:"Genie-3",fixed:true,zone:[720,300,720,300],r:62},
- {name:"PAN",zone:[245,430,275,460],r:48},
- {name:"Marble",zone:[1210,40,1370,170],r:48}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,fear:0,
+ {name:"Genie-3",fixed:true,zone:[830,300,830,300],r:62},
+ {name:"PAN",zone:[300,410,330,440],r:48},
+ {name:"Marble",zone:[1260,40,1380,170],r:48}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,fear:0,
   t:Array.from({length:b.fixed?0:8},(_,j)=>({a:j/8*Math.PI*2+i,len:16+Math.random()*(b.fixed?26:38),ph:Math.random()*6,sp:.4+Math.random()*.6}))}));
 const STILL=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function blobFrame(ms){
@@ -225,7 +225,7 @@ function goHit(d){const bar=document.getElementById("find"),n=FIND.hits.length;
  h.scrollIntoView({behavior:STILL?"auto":"smooth",block:"center"})}
 function closeFind(){clearHits();document.getElementById("find").classList.remove("on");document.querySelectorAll(".card.full").forEach(c=>c.classList.remove("full"))}
 function drawMap(){
- const cx=720,cy=300,svg=document.getElementById("map");let s="";
+ const cx=830,cy=300,svg=document.getElementById("map");let s="";
  const R=m=>m.plan?26:24+Math.sqrt(C.worlds(C.test(m.l)).length)*7;
  const at=l=>l==="PAN"?(({x,y})=>({x,y}))(BLOBS.find(b=>b.name==="PAN")):MAP.find(m=>m.l===l);
  const curve=(x1,y1,x2,y2)=>`M${x1},${y1} Q${(x1+x2)/2},${y2} ${x2},${y2}`;

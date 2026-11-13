@@ -6,7 +6,7 @@ const TESTS=[
  {id:"t6",num:6,label:"1B",name:"Least Advanced City",runs:10},
  {id:"t2",num:2,label:"2",name:"Object Permanence",runs:10},
  {id:"t3",num:3,label:"3",name:"Body in the Loop",runs:10},
- {id:"t4",num:4,label:"4",name:"Predigested Worlds: Lagos",runs:10},
+ {id:"t4",num:4,label:"4A",name:"Predigested Worlds: Lagos",runs:10},
  {id:"t7",num:7,label:"4B",name:"Predigested Worlds: London",runs:10},
  {id:"t5",num:5,label:"5",name:"Uncomputable Surfaces",runs:10},
  {id:"t8",num:8,label:"1A-PAN",name:"PAN · OpenAI rewriter",runs:10},
@@ -20,7 +20,7 @@ const HTYPE={"Robed guards":"People","Grey child":"People","Disembodied arms":"P
  "Invented book title":"Text & interface","Game HUD":"Text & interface","Extra beagles":"Copies"};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pad=n=>String(n).padStart(2,"0");
-function test(label){return TESTS.find(t=>t.label===label)||TESTS[0]}
+function test(label){if(label==="4")label="4A";return TESTS.find(t=>t.label===label)||TESTS[0]}
 function worlds(t){return D.worlds.filter(w=>w.test===t.num).sort((a,b)=>a.num-b.num)}
 function glitches(t){return D.glitches.filter(g=>g.test===t.num).sort((a,b)=>(a.world-b.world)||(secs(a.time)-secs(b.time)))}
 function info(t){return D.tests[t.id]||{}}
