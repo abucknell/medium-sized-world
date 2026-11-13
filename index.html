@@ -158,12 +158,12 @@ const MAP=[
  {plan:true,l:"2B",x:1270,y:550,from:"2",name:"Invented agents",sub:"Overworld story world · planned"},
  {l:"3",x:800,y:530},{l:"4A",x:600,y:450},
  {l:"4B",x:600,y:295,from:"4A"},{l:"5",x:650,y:130},
- {l:"1A-PAN",x:170,y:300,from:"PAN"},{l:"1A-PAN-K",x:330,y:150,from:"PAN"},{l:"1B-PAN",x:440,y:555,from:"PAN"},{l:"1B-PAN-K",x:170,y:555,from:"PAN"}];
+ {l:"1A-PAN",x:100,y:290,from:"PAN"},{l:"1A-PAN-K",x:250,y:140,from:"PAN"},{l:"1B-PAN",x:370,y:555,from:"PAN"},{l:"1B-PAN-K",x:100,y:555,from:"PAN"}];
 // Untested models drift in their own zones, growing tendrils that reach for nothing yet.
 const BLOBS=[
  {name:"Genie-3",fixed:true,zone:[830,300,830,300],r:62},
- {name:"PAN",zone:[300,410,330,440],r:48},
- {name:"Marble",zone:[1260,40,1380,170],r:48}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,fear:0,
+ {name:"PAN",zone:[215,405,245,435],r:48},
+ {name:"Marble",zone:[1320,60,1380,150],r:48}].map((b,i)=>({...b,x:(b.zone[0]+b.zone[2])/2,y:(b.zone[1]+b.zone[3])/2,vx:0,vy:0,fear:0,
   t:Array.from({length:b.fixed?0:8},(_,j)=>({a:j/8*Math.PI*2+i,len:16+Math.random()*(b.fixed?26:38),ph:Math.random()*6,sp:.4+Math.random()*.6}))}));
 const STILL=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function blobFrame(ms){
