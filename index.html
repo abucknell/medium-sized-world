@@ -48,7 +48,13 @@ header p{max-width:36ch;margin:6px 0 0;color:var(--soft)}
 main{max-width:1200px;margin:0 auto;padding:40px 40px 140px}
 .testhead{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin:0 0 26px}
 .testhead h2{font-weight:400;font-size:clamp(26px,3.4vw,40px);letter-spacing:-.01em;margin:0}
-.testhead .num{display:inline-grid;place-items:center;width:46px;height:46px;border-radius:50%;border:1px solid var(--green);color:var(--green);font-size:15px}
+.testhead .num{display:inline-grid;place-items:center;min-width:46px;height:46px;padding:0 12px;box-sizing:border-box;border-radius:23px;border:1px solid var(--green);color:var(--green);font-size:15px;white-space:nowrap}
+.rw h5{font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:18px 0 8px;color:var(--soft)}
+.rw h5:first-child{margin-top:0}
+.rw .tw{display:flex;flex-wrap:wrap;gap:6px}
+.rw .tw span{border:1px solid var(--line,#ccc);border-radius:12px;padding:2px 9px;font-size:13px}
+.rw .tw span b{font-weight:500;color:var(--green);margin-left:5px}
+.rw .q{margin:4px 0;font-size:14px}
 .bubbles{display:flex;flex-wrap:wrap;gap:22px 26px;align-items:flex-end;margin:0 0 56px}
 .bub{display:flex;flex-direction:column;align-items:center;gap:8px;width:120px;text-align:center}
 .bub .c{border-radius:50%;border:1px solid var(--ink);display:grid;place-items:center;position:relative;overflow:hidden}
@@ -237,7 +243,7 @@ function drawMap(){
  MAP.forEach(m=>{const r=R(m);
   if(m.plan){s+=`<g class="plan"><circle cx="${m.x}" cy="${m.y}" r="${r}" fill="#fff" stroke="var(--green)" stroke-dasharray="3 3"/><text x="${m.x}" y="${m.y+4}" text-anchor="middle" style="font-size:12px;fill:var(--green)">Test ${m.l}</text><text x="${m.x}" y="${m.y+r+18}" text-anchor="middle" style="font-size:12px">${esc(m.name)}</text><text x="${m.x}" y="${m.y+r+33}" text-anchor="middle" style="font-size:11px;fill:var(--soft)">${esc(m.sub)}</text></g>`;return}
   const t=C.test(m.l),n=C.worlds(t).length;
-  s+=`<g class="node${t===T?" on":""}" data-t="${t.label}" tabindex="0" role="button" aria-label="Test ${t.label}"><circle cx="${m.x}" cy="${m.y}" r="${r}"/><text class="lab" x="${m.x}" y="${m.y-2}">Test ${t.label}</text><text class="mono" x="${m.x}" y="${m.y+14}" style="font-size:10.5px">${n}/10</text><text x="${m.x}" y="${m.y+r+18}" style="font-size:12px">${esc(m.sub||t.name)}</text></g>`});
+  s+=`<g class="node${t===T?" on":""}" data-t="${t.label}" tabindex="0" role="button" aria-label="Test ${t.label}"><circle cx="${m.x}" cy="${m.y}" r="${r}"/><text class="lab" x="${m.x}" y="${m.y-2}"${t.label.length>4?` style="font-size:10.5px"`:""}>Test ${t.label}</text><text class="mono" x="${m.x}" y="${m.y+14}" style="font-size:10.5px">${n}/10</text><text x="${m.x}" y="${m.y+r+18}" style="font-size:12px">${esc(m.sub||t.name)}</text></g>`});
  svg.innerHTML=s;if(STILL)blobFrame(0);else if(!window._blob){window._blob=1;requestAnimationFrame(blobFrame)}
  svg.querySelectorAll(".node").forEach(g=>{const go=()=>{T=C.test(g.dataset.t);history.replaceState(0,"","?t="+T.label);render();drift(document.querySelector("main"))};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
  svg.querySelectorAll(".pill").forEach(g=>{const go=()=>{const t=C.test(g.dataset.t);if(t!==T){T=t;history.replaceState(0,"","?t="+T.label);render()}findKw(g.dataset.k)};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter")go()}});
@@ -267,6 +273,12 @@ document.addEventListener("keydown",e=>{const lb=document.getElementById("lb");
   if(e.key==="Escape")closeFind();else if(e.key==="Enter"&&!e.target.closest(".pill,.node,button")||e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();goHit(e.key==="ArrowLeft"||e.shiftKey?-1:1)}return}
  if(e.key==="Escape")lb.classList.remove("on");
  else if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();lbStep(e.key==="ArrowRight"?1:-1)}});
+// PAN tests: what the rewriter LLM wrote into the hidden shot script (counts = scripts out of 10).
+function rwFrame(r){const tags=a=>`<div class="tw">${a.map(([w,n])=>`<span>${esc(w)}${n!=null?`<b>${n}</b>`:""}</span>`).join("")}</div>`;
+ const cats=(r.categories||[]).map(([c,ts])=>`<h5>${esc(c.replace(/'/g,""))}</h5>${tags(ts)}`).join("");
+ const only=(r.only||[]).length?`<h5>Only this rewriter (not the other)</h5>${tags(r.only.slice(0,18).map(w=>[w,null]))}`:"";
+ const qs=(r.quotes||[]).length?`<h5>Text it wrote into the world</h5>${r.quotes.slice(0,10).map(([q,n])=>`<p class="q">“${esc(q)}”${n>1?` <span class="mono g">×${n}</span>`:""}</p>`).join("")}`:"";
+ return `<div class="frame rw"><span class="lbl">Words the rewriter added</span><p class="mono" style="margin:0 0 14px">Terms in the rewritten script that are not in the prompt. Numbers = scripts out of ${r.scripts||10}.</p>${cats}${only}${qs}</div>`}
 function render(){
  closeFind();drawMap();strip();
  const I=C.info(T),S=C.stats(T),ws=C.worlds(T),gs=C.glitches(T);
@@ -281,8 +293,8 @@ function render(){
  const bars=(rows)=>rows.slice(0,7).map(([k,n])=>`<div class="br"><span>${esc(k)}</span><span class="mono">${n}</span><span class="dots">${"<i></i>".repeat(n)}</span></div>`).join("");
  const ht=C.hallTypes(ws),loc=C.tally(ws,"arch");
  two.innerHTML=ws.length?`<div class="frame"><span class="lbl">City location</span>${loc.length?bars(loc):bars(C.tally(ws,"camera"))||"<p class='mono'>Not recorded for this test.</p>"}</div>
-  <div class="frame"><span class="lbl">Hallucination typology</span><div class="types">${Object.entries(ht).map(([t,o])=>`<span class="type"><b>${t}</b>${Object.keys(o).map(esc).join(", ")}</span>`).join("")||"<span class='mono'>None yet.</span>"}</div>${(C.tally(ws,"nonWestern").length)?`<p class="mono" style="margin:22px 0 8px">NON-WESTERN PLACES</p>${bars(C.tally(ws,"nonWestern"))}`:""}</div>`:"";
- cards.innerHTML=ws.length?ws.map(w=>`<div class="card" data-id="${w.id}"><div class="im">${w.hero?`<img src="${esc(w.hero)}" alt="" loading="lazy">`:""}</div><div class="meta"><span class="mono">${pad(w.num)}</span><h4>${esc(w.name)}</h4></div><p>${esc(w.description||"")}</p>${w.bias?`<p class="bias">${esc(w.bias)}</p>`:""}</div>`).join(""):"<p class='mono'>No worlds logged for this test yet.</p>";
+  ${I.rewriter?rwFrame(I.rewriter):`<div class="frame"><span class="lbl">Hallucination typology</span><div class="types">${Object.entries(ht).map(([t,o])=>`<span class="type"><b>${t}</b>${Object.keys(o).map(esc).join(", ")}</span>`).join("")||"<span class='mono'>None yet.</span>"}</div>${(C.tally(ws,"nonWestern").length)?`<p class="mono" style="margin:22px 0 8px">NON-WESTERN PLACES</p>${bars(C.tally(ws,"nonWestern"))}`:""}</div>`}`:"";
+ cards.innerHTML=ws.length?ws.map(w=>`<div class="card" data-id="${w.id}"><div class="im">${w.hero?`<img src="${esc(w.hero)}" alt="" loading="lazy">`:""}</div><div class="meta">${w.model?"":`<span class="mono">${pad(w.num)}</span>`}<h4>${esc(w.name)}</h4></div><p>${esc(w.description||"")}</p>${w.bias?`<p class="bias">${esc(w.bias)}</p>`:""}</div>`).join(""):"<p class='mono'>No worlds logged for this test yet.</p>";
  document.querySelectorAll(".card").forEach(c=>c.onclick=()=>lightbox(c.dataset.id));
  const kw=I.kw||{},k=a=>(a||[]).map(x=>`<span class="kw">${esc(x)}</span>`).join("");kwg.innerHTML=k(kw.glitches);kwp.innerHTML=k(kw.patterns);kwa.innerHTML=k(kw.analysis);
  gl.innerHTML=gs.map(g=>`<div class="gl"><span class="mono">${g.world?pad(g.world):"—"}</span><span class="mono">${esc(g.time)}</span><span class="g">${esc(g.type)}</span><span>${esc(g.desc)}</span></div>`).join("")||"<p class='mono'>No glitches logged.</p>";
