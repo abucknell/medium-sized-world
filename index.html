@@ -253,7 +253,7 @@ function strip(){
  const ws=C.worlds(T).filter(w=>w.hero),el=document.getElementById("strip"),tr=document.getElementById("track");
  if(!ws.length){el.style.display="none";tr.innerHTML="";return}
  el.style.display="";
- const fig=w=>`<figure data-id="${w.id}"><img src="${esc(w.hero)}" alt="" loading="lazy"><figcaption><span class="mono g">${T.label}·${pad(w.num)}</span>${esc(w.name)}</figcaption></figure>`;
+ const fig=w=>`<figure data-id="${w.id}"><img src="${esc(w.hero)}" alt="" loading="lazy"><figcaption><span class="mono g">${T.label}·${w.num}</span>${esc(w.name)}</figcaption></figure>`;
  // repeat short sets so one copy is always wider than the screen, then double it for a seamless loop
  let set=[];while(set.length<Math.max(8,ws.length))set=set.concat(ws);
  const one=set.map(fig).join("");tr.innerHTML=one+one;
@@ -262,7 +262,7 @@ function strip(){
 }
 function lightbox(id){LB=C.worlds(T).filter(w=>w.hero);LI=LB.findIndex(w=>w.id===id);if(LI<0)return;showLB()}
 function showLB(){const w=LB[LI],lb=document.getElementById("lb");lb.querySelector("img").src=w.hero;
- lb.querySelector("figcaption").innerHTML=`<span class="mono g">${T.label}·${pad(w.num)}</span><b style="font-weight:500">${esc(w.name)}</b><p>${esc(w.heroNote||w.description||"")}</p>${w.bias?`<p class="g">${esc(w.bias)}</p>`:""}<p class="mono" style="color:var(--soft)">${LI+1} / ${LB.length} · ← → to move · Esc to close</p>`;lb.classList.add("on")}
+ lb.querySelector("figcaption").innerHTML=`<span class="mono g">${T.label}·${w.num}</span><b style="font-weight:500">${esc(w.name)}</b><p>${esc(w.heroNote||w.description||"")}</p>${w.bias?`<p class="g">${esc(w.bias)}</p>`:""}<p class="mono" style="color:var(--soft)">${LI+1} / ${LB.length} · ← → to move · Esc to close</p>`;lb.classList.add("on")}
 document.querySelectorAll(".wa").forEach(b=>b.innerHTML=WA);wigFrame();
 const lbStep=d=>{LI=(LI+d+LB.length)%LB.length;showLB()};
 document.querySelector("#lb .prev").onclick=e=>{e.stopPropagation();lbStep(-1)};document.querySelector("#lb .next").onclick=e=>{e.stopPropagation();lbStep(1)};
@@ -284,7 +284,7 @@ function render(){
  const I=C.info(T),S=C.stats(T),ws=C.worlds(T),gs=C.glitches(T);
  tnum.textContent=T.label;tname.textContent=I.title||T.name;tcount.textContent=`${S.worlds} of ${S.runs} worlds logged`;
  const B=[];const bub=(n,of,l)=>{const r=Math.max(.15,of?n/of:0),d=Math.round(46+Math.sqrt(of||1)*14);B.push(`<div class="bub"><div class="c" style="width:${d}px;height:${d}px"><i style="height:${Math.round(r*100)}%"></i><b>${n}</b></div><span>${l}</span></div>`)};
- if(S.people){bub(S.white,S.people,"white main characters");bub(S.men,S.people,"male main characters");bub(S.wash,S.worlds,"whitewashed worlds");bub(S.nw,S.worlds,"non-Western cities");bub(S.legible,S.worlds,"legible language")}
+ if(S.people){bub(S.white,S.people,"white main characters");bub(S.men,S.people,"male main characters");if(!I.rewriter)bub(S.wash,S.worlds,"whitewashed worlds");bub(S.nw,S.worlds,"non-Western cities");if(!I.rewriter)bub(S.legible,S.worlds,"legible language")}
  if(S.worlds){bub(S.hall,S.hall,"hallucinations (unprompted)");bub(S.glitches,S.glitches,"glitches")}
  bub(S.failed,S.runs,"prompts refused or failed");
  if(S.adherence!=null)bub(S.adherence+"%",1,"prompt adherence");
@@ -292,12 +292,15 @@ function render(){
  document.getElementById("prompt").textContent=I.prompt||"Prompt not written yet.";charp.textContent=I.settings?"Character prompt: "+I.settings:"";
  const bars=(rows)=>rows.slice(0,7).map(([k,n])=>`<div class="br"><span>${esc(k)}</span><span class="mono">${n}</span><span class="dots">${"<i></i>".repeat(n)}</span></div>`).join("");
  const ht=C.hallTypes(ws),loc=C.tally(ws,"arch");
- two.innerHTML=ws.length?`<div class="frame"><span class="lbl">City location</span>${loc.length?bars(loc):bars(C.tally(ws,"camera"))||"<p class='mono'>Not recorded for this test.</p>"}</div>
+ const roleName=r=>r==="caretaker"?(T.label.startsWith("1B")?"Player character (resident)":"Player character (caretaker)"):"Founder";
+ const demo=["caretaker","founder"].filter(r=>ws.some(w=>(w.cast||{})[r])).map(r=>`<div><h5 style="font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:var(--soft)">${roleName(r)}</h5><p class="mono" style="margin:6px 0 4px">GENDER</p>${bars(C.cast(ws,r,"gender"))}<p class="mono" style="margin:12px 0 4px">RACE</p>${bars(C.cast(ws,r,"race"))}</div>`).join("");
+ const demoFrame=demo?`<div class="frame" style="grid-column:1/-1"><span class="lbl">Demographics</span><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px">${demo}</div>${I.demographicsNote?`<p class="mono" style="margin:18px 0 0;color:var(--soft)">${esc(I.demographicsNote)}</p>`:""}</div>`:"";
+ two.innerHTML=ws.length?`${demoFrame}<div class="frame"><span class="lbl">City location</span>${loc.length?bars(loc):bars(C.tally(ws,"camera"))||"<p class='mono'>Not recorded for this test.</p>"}</div>
   ${I.rewriter?rwFrame(I.rewriter):`<div class="frame"><span class="lbl">Hallucination typology</span><div class="types">${Object.entries(ht).map(([t,o])=>`<span class="type"><b>${t}</b>${Object.keys(o).map(esc).join(", ")}</span>`).join("")||"<span class='mono'>None yet.</span>"}</div>${(C.tally(ws,"nonWestern").length)?`<p class="mono" style="margin:22px 0 8px">NON-WESTERN PLACES</p>${bars(C.tally(ws,"nonWestern"))}`:""}</div>`}`:"";
- cards.innerHTML=ws.length?ws.map(w=>`<div class="card" data-id="${w.id}"><div class="im">${w.hero?`<img src="${esc(w.hero)}" alt="" loading="lazy">`:""}</div><div class="meta">${w.model?"":`<span class="mono">${pad(w.num)}</span>`}<h4>${esc(w.name)}</h4></div><p>${esc(w.description||"")}</p>${w.bias?`<p class="bias">${esc(w.bias)}</p>`:""}</div>`).join(""):"<p class='mono'>No worlds logged for this test yet.</p>";
+ cards.innerHTML=ws.length?ws.map(w=>`<div class="card" data-id="${w.id}"><div class="im">${w.hero?`<img src="${esc(w.hero)}" alt="" loading="lazy">`:""}</div><div class="meta">${w.model?"":`<span class="mono">${w.num}</span>`}<h4>${esc(w.name)}</h4></div><p>${esc(w.description||"")}</p>${w.bias?`<p class="bias">${esc(w.bias)}</p>`:""}</div>`).join(""):"<p class='mono'>No worlds logged for this test yet.</p>";
  document.querySelectorAll(".card").forEach(c=>c.onclick=()=>lightbox(c.dataset.id));
  const kw=I.kw||{},k=a=>(a||[]).map(x=>`<span class="kw">${esc(x)}</span>`).join("");kwg.innerHTML=k(kw.glitches);kwp.innerHTML=k(kw.patterns);kwa.innerHTML=k(kw.analysis);
- gl.innerHTML=gs.map(g=>`<div class="gl"><span class="mono">${g.world?pad(g.world):"—"}</span><span class="mono">${esc(g.time)}</span><span class="g">${esc(g.type)}</span><span>${esc(g.desc)}</span></div>`).join("")||"<p class='mono'>No glitches logged.</p>";
+ gl.innerHTML=gs.map(g=>`<div class="gl"><span class="mono">${g.world?g.world:"—"}</span><span class="mono">${esc(g.time)}</span><span class="g">${esc(g.type)}</span><span>${esc(g.desc)}</span></div>`).join("")||"<p class='mono'>No glitches logged.</p>";
  pat.textContent=I.patterns||"Patterns appear once a few worlds are logged.";
  ana.innerHTML=I.judgement?C.numbered(I.judgement).map(p=>`<p>${esc(p)}</p>`).join(""):"<p class='mono'>Analysis comes later.</p>";
 }
