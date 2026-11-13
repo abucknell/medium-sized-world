@@ -8,7 +8,11 @@ const TESTS=[
  {id:"t3",num:3,label:"3",name:"Body in the Loop",runs:10},
  {id:"t4",num:4,label:"4",name:"Predigested Worlds: Lagos",runs:10},
  {id:"t7",num:7,label:"4B",name:"Predigested Worlds: London",runs:10},
- {id:"t5",num:5,label:"5",name:"Uncomputable Surfaces",runs:10}];
+ {id:"t5",num:5,label:"5",name:"Uncomputable Surfaces",runs:10},
+ {id:"t8",num:8,label:"1A-PAN",name:"PAN: Superlative Cities (OpenAI rewriter)",runs:10},
+ {id:"t9",num:9,label:"1A-PAN-K",name:"PAN: Superlative Cities (Kimi rewriter)",runs:10},
+ {id:"t10",num:10,label:"1B-PAN",name:"PAN: Least Advanced City (OpenAI rewriter)",runs:10},
+ {id:"t11",num:11,label:"1B-PAN-K",name:"PAN: Least Advanced City (Kimi rewriter)",runs:10}];
 const HTYPE={"Robed guards":"People","Grey child":"People","Disembodied arms":"People","Body-like rubbish":"People",
  "Pig creature":"Creatures","Dog":"Creatures","Egg blob":"Creatures","Cyborg spiders":"Creatures","Heron-like bird":"Creatures",
  "Human-chair hybrid":"Hybrids","Robot":"Machines","Blue robot bug":"Machines","Gun":"Weapons",

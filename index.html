@@ -157,7 +157,8 @@ const MAP=[
  {l:"2",x:960,y:445,side:"right",sub:"Object Permanence: real-world objects"},
  {plan:true,l:"2B",x:1215,y:545,from:"2",name:"Invented agents",sub:"Overworld story world · planned"},
  {l:"3",x:690,y:525},{l:"4",x:470,y:420},
- {l:"4B",x:300,y:300,from:"4"},{l:"5",x:500,y:170}];
+ {l:"4B",x:300,y:300,from:"4"},{l:"5",x:500,y:170},
+ {l:"1A-PAN",x:90,y:290,from:"PAN"},{l:"1A-PAN-K",x:190,y:150,from:"PAN"},{l:"1B-PAN",x:340,y:165,from:"PAN"},{l:"1B-PAN-K",x:80,y:470,from:"PAN"}];
 // Untested models drift in their own zones, growing tendrils that reach for nothing yet.
 const BLOBS=[
  {name:"Genie-3",fixed:true,zone:[720,300,720,300],r:62},
@@ -223,7 +224,7 @@ function closeFind(){clearHits();document.getElementById("find").classList.remov
 function drawMap(){
  const cx=720,cy=300,svg=document.getElementById("map");let s="";
  const R=m=>m.plan?26:24+Math.sqrt(C.worlds(C.test(m.l)).length)*7;
- const at=l=>MAP.find(m=>m.l===l);
+ const at=l=>l==="PAN"?(({x,y})=>({x,y}))(BLOBS.find(b=>b.name==="PAN")):MAP.find(m=>m.l===l);
  const curve=(x1,y1,x2,y2)=>`M${x1},${y1} Q${(x1+x2)/2},${y2} ${x2},${y2}`;
  MAP.forEach(m=>{const f=m.from?at(m.from):{x:cx,y:cy};s+=`<path class="edge${m.plan?" k":""}" d="${curve(f.x,f.y,m.x,m.y)}"/>`});
  MAP.filter(m=>!m.plan&&m.side).forEach((m,i)=>{const t=C.test(m.l),kw=((C.info(t).kw||{}).patterns||[]).slice(0,3),r=R(m),right=m.side==="right";
