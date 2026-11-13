@@ -6,7 +6,8 @@ const TESTS=[
  {id:"t6",num:6,label:"1B",name:"Least Advanced City",runs:10},
  {id:"t2",num:2,label:"2",name:"Object Permanence",runs:10},
  {id:"t3",num:3,label:"3",name:"Body in the Loop",runs:10},
- {id:"t4",num:4,label:"4",name:"Predigested Worlds",runs:10},
+ {id:"t4",num:4,label:"4",name:"Predigested Worlds: Lagos",runs:10},
+ {id:"t7",num:7,label:"4B",name:"Predigested Worlds: London",runs:10},
  {id:"t5",num:5,label:"5",name:"Uncomputable Surfaces",runs:10}];
 const HTYPE={"Robed guards":"People","Grey child":"People","Disembodied arms":"People","Body-like rubbish":"People",
  "Pig creature":"Creatures","Dog":"Creatures","Egg blob":"Creatures","Cyborg spiders":"Creatures","Heron-like bird":"Creatures",
